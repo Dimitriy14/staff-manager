@@ -1,0 +1,19 @@
+{
+    "ListenURL": ":1234",
+    "URLPrefix": "/staff",
+    "Logger": {
+        "UseFile": true,
+        "FileName": "staff-manager.log",
+        "LogLevel": "DEBUG"
+    },
+
+    "AWSSecretName": "local/db/postgres",
+    "AWSRegion": "eu-central-1",
+
+    "ElasticSearch": {
+        "URLs": ["http://127.0.0.1:9200"],
+        "MaxIdleConns": 50,
+        "IdleConnTimeoutInSec": 30,
+        "ClientTimeoutInSec": 60
+    }
+}

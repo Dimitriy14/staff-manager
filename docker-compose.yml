@@ -1,0 +1,25 @@
+version: "3.7"
+services:
+  postgres:
+    container_name: postgresdb
+    image: postgres:11
+    restart: always
+    environment:
+      POSTGRES_DB: staff_manager
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: 1337
+    ports:
+      - "5431:5432"
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
+    container_name: es
+    environment:
+      - discovery.type=single-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
