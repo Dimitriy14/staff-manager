@@ -13,4 +13,4 @@ Postgres credentials should be stored in AWS Secret Manager:
   "Password": "1337",
   "DataBaseName": "staff_manager"
 }`  
-Other configuration can be changed in [config.json](../config.json) 
+Other configuration can be changed in [config.json](./config.json) 
