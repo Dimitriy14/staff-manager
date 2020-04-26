@@ -7,8 +7,8 @@ import (
 
 	"github.com/Dimitriy14/staff-manager/logger"
 	"github.com/Dimitriy14/staff-manager/models"
-	"github.com/olivere/elastic"
 
+	"github.com/olivere/elastic"
 	"github.com/pkg/errors"
 )
 
@@ -16,15 +16,36 @@ const elasticSearch = "ElasticSearch"
 
 type Client struct {
 	ESClient   *elastic.Client
+	BulkProc   *elastic.BulkProcessor
 	httpClient *http.Client
 	urls       []string
 }
 
 type Config struct {
-	URLs                 []string `json:"URLs"`
-	MaxIdleConns         int      `json:"MaxIdleConns"`
-	IdleConnTimeoutInSec int      `json:"IdleConnTimeoutInSec"`
-	ClientTimeoutInSec   int      `json:"ClientTimeoutInSec"`
+	URLs                 []string   `json:"URLs"`
+	MaxIdleConns         int        `json:"MaxIdleConns"`
+	IdleConnTimeoutInSec int        `json:"IdleConnTimeoutInSec"`
+	ClientTimeoutInSec   int        `json:"ClientTimeoutInSec"`
+	BulkConfig           BulkConfig `json:"BulkConfig"`
+}
+
+type BulkConfig struct {
+	// Name is an optional name to identify this bulk processor.
+	Name string `json:"Name"`
+	// Workers is the number of concurrent workers allowed to be
+	// executed. Defaults to 1 and must be greater or equal to 1.
+	Workers int `json:"Workers"`
+	// FlushInterval specifies when to flush at the end of the given interval.
+	// This is disabled by default. If you want the bulk processor to
+	// operate completely asynchronously, set both BulkActions and BulkSize to
+	// -1 and set the FlushInterval to a meaningful interval.
+	FlushInterval time.Duration `json:"FlushInterval"`
+	// BulkSize specifies when to flush based on the size (in bytes) of the actions
+	// currently added. Defaults to 5 MB and can be set to -1 to be disabled.
+	MaxBulkSize int `json:"MaxBulkSize"`
+	// BulkActions specifies when to flush based on the number of actions
+	// currently added. Defaults to 1000 and can be set to -1 to be disabled.
+	BulkActions int `json:"BulkActions"`
 }
 
 func Load(cfg Config, log logger.Logger) (*Client, error) {
@@ -47,7 +68,14 @@ func Load(cfg Config, log logger.Logger) (*Client, error) {
 		return nil, errors.Wrap(err, "can't establish connection to ElasticSearch")
 	}
 
-	return &Client{ESClient: esClient, httpClient: httpClient, urls: cfg.URLs}, nil
+	c := &Client{ESClient: esClient, httpClient: httpClient, urls: cfg.URLs}
+
+	c.BulkProc, err = c.startUserBulkProcessor(cfg.BulkConfig, log)
+	if err != nil {
+		return nil, errors.Wrap(err, "can't start user bulk processor")
+	}
+
+	return c, nil
 }
 
 func (c *Client) Close() error {
@@ -55,7 +83,8 @@ func (c *Client) Close() error {
 	if c.ESClient.IsRunning() {
 		c.ESClient.Stop()
 	}
-	return nil
+
+	return c.BulkProc.Stop()
 }
 
 func (c *Client) Status() models.ConnectionStatus {
@@ -78,4 +107,15 @@ func (c *Client) Status() models.ConnectionStatus {
 		ActiveNodes: activeNodes,
 		DownNodes:   downNodes,
 	}
+}
+
+func (c *Client) startUserBulkProcessor(cfg BulkConfig, log logger.Logger) (*elastic.BulkProcessor, error) {
+	return c.ESClient.BulkProcessor().
+		Name(cfg.Name).
+		After(AfterCallback(log)).
+		Workers(cfg.Workers).
+		BulkSize(cfg.MaxBulkSize).
+		BulkActions(cfg.BulkActions).
+		FlushInterval(cfg.FlushInterval).
+		Do(context.Background())
 }

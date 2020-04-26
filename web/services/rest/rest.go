@@ -3,6 +3,7 @@ package rest
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/Dimitriy14/staff-manager/logger"
@@ -25,7 +26,6 @@ const (
 
 // Message contains the message to send as a response
 type Message struct {
-	ErrorID string `json:"id,omitempty"`
 	Message string `json:"message"`
 }
 
@@ -48,38 +48,41 @@ func (r *Service) render(ctx context.Context, w http.ResponseWriter, code int, r
 	w.WriteHeader(code)
 	_, err := w.Write(response)
 	if err != nil {
-		r.log.Warn(transactionID.FromContext(ctx), "Write request failed, error:%v", err)
+		r.log.Warnf(transactionID.FromContext(ctx), "Write request failed, error:%v", err)
 	}
 	if code < 300 {
-		r.log.Info(transactionID.FromContext(ctx), "Request success, Code=%d", code)
+		r.log.Infof(transactionID.FromContext(ctx), "Request success, Code=%d", code)
 	} else {
-		r.log.Warn(transactionID.FromContext(ctx), "Request failed, Code=%d", code)
+		r.log.Warnf(transactionID.FromContext(ctx), "Request failed, Code=%d", code)
 	}
 }
 
 // SendBadRequest sends Bad Request Status and logs an error if it exists
-func (r *Service) SendBadRequest(ctx context.Context, log logger.Logger, w http.ResponseWriter, message string, errorID ...string) {
-	r.sendMessage(ctx, w, http.StatusBadRequest, message, errorID...)
+func (r *Service) SendBadRequest(ctx context.Context, w http.ResponseWriter, message string, v ...interface{}) {
+	r.sendMessage(ctx, w, http.StatusBadRequest, message, v...)
+}
+
+// SendUnauthorized sends Unauthorized Status and logs an error if it exists
+func (r *Service) SendUnauthorized(ctx context.Context, w http.ResponseWriter, message string, v ...interface{}) {
+	r.sendMessage(ctx, w, http.StatusUnauthorized, message, v...)
 }
 
 // SendNotFound sends Not Fount Status and logs an error if it exists
-func (r *Service) SendNotFound(ctx context.Context, log logger.Logger, w http.ResponseWriter, message string) {
+func (r *Service) SendNotFound(ctx context.Context, w http.ResponseWriter, message string) {
 	r.sendMessage(ctx, w, http.StatusNotFound, message)
 }
 
 // SendInternalServerError sends Internal Server Error Status and logs an error if it exists
-func (r *Service) SendInternalServerError(ctx context.Context, w http.ResponseWriter, message string) {
-	r.sendMessage(ctx, w, http.StatusInternalServerError, message)
+func (r *Service) SendInternalServerError(ctx context.Context, w http.ResponseWriter, message string, v ...interface{}) {
+	r.sendMessage(ctx, w, http.StatusInternalServerError, message, v...)
 }
 
 // SendMessage writes a defined string as an error message
 // with appropriate headers to the HTTP response
-func (r *Service) sendMessage(ctx context.Context, w http.ResponseWriter, code int, message string, errorID ...string) {
+func (r *Service) sendMessage(ctx context.Context, w http.ResponseWriter, code int, format string, v ...interface{}) {
 	w.Header().Set(accessControlAllowOrigin, "*")
-	errorMessage := Message{Message: message}
-	if len(errorID) == 1 {
-		errorMessage.ErrorID = errorID[0]
-	}
+	errorMessage := Message{Message: fmt.Sprintf(format, v...)}
+
 	data, err := json.Marshal(errorMessage)
 	if err != nil {
 		r.log.Error(transactionID.FromContext(ctx), "", "Failed to Marshal data, error:%v", err)

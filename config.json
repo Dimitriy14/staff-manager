@@ -9,6 +9,8 @@
 
     "AWSSecretName": "local/db/postgres",
     "AWSRegion": "eu-central-1",
+    "UserPoolID": "eu-central-1_BhlgQejTC",
+    "ClientID": "5dn0lvbd04h11n74g27esaahml",
 
     "ElasticSearch": {
         "URLs": ["http://127.0.0.1:9200"],

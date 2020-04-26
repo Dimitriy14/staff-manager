@@ -9,5 +9,5 @@ func NewGORMLogger(log Logger) *gormLoggerImpl {
 }
 
 func (gl *gormLoggerImpl) Print(v ...interface{}) {
-	gl.log.Debug("", v)
+	gl.log.Debug("", v...)
 }

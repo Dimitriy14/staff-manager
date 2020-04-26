@@ -6,13 +6,18 @@ import (
 	"os"
 	"syscall"
 
+	"github.com/Dimitriy14/staff-manager/logger"
 	"github.com/urfave/negroni"
 )
 
-func NewServer(addr string, handler http.Handler, signal chan os.Signal) *server {
+func NewServer(addr string, handler http.Handler, log logger.Logger, signal chan os.Signal) *server {
 	recovery := negroni.NewRecovery()
+	negroniLog := negroni.NewLogger()
+	negroniLog.ALogger = logger.NewNegroniLogger(log)
+
 	middlewareManger := negroni.New()
 	middlewareManger.Use(recovery)
+	middlewareManger.Use(negroniLog)
 	middlewareManger.UseHandler(handler)
 
 	return &server{

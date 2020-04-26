@@ -67,35 +67,35 @@ type loggerImpl struct {
 }
 
 func (l *loggerImpl) Debug(txID string, v ...interface{}) {
-	l.log.WithFields(logrus.Fields{"txID": txID}).Debug(v)
+	l.log.WithFields(logrus.Fields{"txID": txID}).Debug(v...)
 }
 
 func (l *loggerImpl) Debugf(txID, format string, v ...interface{}) {
-	l.log.WithFields(logrus.Fields{"txID": txID}).Debugf(format, v)
+	l.log.WithFields(logrus.Fields{"txID": txID}).Debugf(format, v...)
 }
 
 func (l *loggerImpl) Info(txID string, v ...interface{}) {
-	l.log.WithFields(logrus.Fields{"txID": txID}).Info(v)
+	l.log.WithFields(logrus.Fields{"txID": txID}).Info(v...)
 }
 
 func (l *loggerImpl) Infof(txID, format string, v ...interface{}) {
-	l.log.WithFields(logrus.Fields{"txID": txID}).Infof(format, v)
+	l.log.WithFields(logrus.Fields{"txID": txID}).Infof(format, v...)
 }
 
 func (l *loggerImpl) Warn(txID string, v ...interface{}) {
-	l.log.WithFields(logrus.Fields{"txID": txID}).Warn(v)
+	l.log.WithFields(logrus.Fields{"txID": txID}).Warn(v...)
 }
 
 func (l *loggerImpl) Warnf(txID, format string, v ...interface{}) {
-	l.log.WithFields(logrus.Fields{"txID": txID}).Warnf(format, v)
+	l.log.WithFields(logrus.Fields{"txID": txID}).Warnf(format, v...)
 }
 
 func (l *loggerImpl) Error(txID string, v ...interface{}) {
-	l.log.WithFields(logrus.Fields{"txID": txID}).Error(v)
+	l.log.WithFields(logrus.Fields{"txID": txID}).Error(v...)
 }
 
 func (l *loggerImpl) Errorf(txID, format string, v ...interface{}) {
-	l.log.WithFields(logrus.Fields{"txID": txID}).Errorf(format, v)
+	l.log.WithFields(logrus.Fields{"txID": txID}).Errorf(format, v...)
 }
 
 func (l *loggerImpl) Close() error {

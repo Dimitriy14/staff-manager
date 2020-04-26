@@ -9,5 +9,5 @@ func NewElasticLogger(log Logger) *elasticLoggerImpl {
 }
 
 func (gl *elasticLoggerImpl) Printf(format string, v ...interface{}) {
-	gl.log.Errorf("", format, v)
+	gl.log.Errorf("", format, v...)
 }
