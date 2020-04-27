@@ -9,10 +9,6 @@ var UserRegistrationSchema = `
 			"type": "string",
 			"minLength": 1
 		},
-		"secondName": {
-			"type": "string",
-			"minLength": 1
-		},
 		"position": {
 			"type": "string",
 			"minLength": 1
@@ -22,7 +18,7 @@ var UserRegistrationSchema = `
 			"pattern": "^[a-zA-Z0-9]+@[a-z0-9]+.[a-z]{2,4}$"
 		}
 	},
-	"required": ["name", "secondName", "position", "email"],
+	"required": ["name", "position", "email"],
     "additionalProperties": false
 }
 `

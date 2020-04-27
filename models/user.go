@@ -1,6 +1,8 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 const (
 	IDAttribute = "custom:id"
@@ -16,10 +18,12 @@ type AuthOutput struct {
 }
 
 type User struct {
-	ID         uuid.UUID `json:"id"`
-	Name       string    `json:"name"`
-	SecondName string    `json:"secondName"`
-	Position   string    `json:"position"`
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	SecondName  string    `json:"secondName"`
+	Position    string    `json:"position"`
+	MobilePhone string    `json:"mobilePhone,omitempty"`
+	DateOfBirth string    `json:"dateOfBirth,omitempty"`
 }
 
 type UserRegistration struct {

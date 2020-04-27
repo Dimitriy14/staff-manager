@@ -24,7 +24,8 @@ func NewRouter(pathPrefix string, s Services) *mux.Router {
 	authorisation := router.Name("auth").Subrouter()
 	authorisation.Use(s.AuthMiddleware)
 
-	authorisation.Path("/health").HandlerFunc(s.Health).Methods(http.MethodGet)
+	router.Path("/health").HandlerFunc(s.Health).Methods(http.MethodGet)
+
 	router.Path("/signup").HandlerFunc(s.Auth.SignUp).Methods(http.MethodPost)
 	router.Path("/signin").HandlerFunc(s.Auth.SignIn).Methods(http.MethodPost)
 	router.Path("/password/required").HandlerFunc(s.Auth.RequiredPassword).Methods(http.MethodPost)

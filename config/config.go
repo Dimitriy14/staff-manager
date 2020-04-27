@@ -22,9 +22,18 @@ type Configuration struct {
 	AWSRegion     string               `json:"AWSRegion"`
 	Logger        logger.Config        `json:"Logger"`
 	ElasticSearch elasticsearch.Config `json:"ElasticSearch"`
-	ClientID      string               `json:"ClientID"`
-	UserPoolID    string               `json:"UserPoolID"`
 	DB            db.Config
+	CognitoConfig
+}
+
+type SecretConfig struct {
+	Postgres db.Config     `json:"Postgres"`
+	Cognito  CognitoConfig `json:"Cognito"`
+}
+
+type CognitoConfig struct {
+	ClientID   string `json:"ClientID"`
+	UserPoolID string `json:"UserPoolID"`
 }
 
 func Load(configFile string, sess *session.Session) (Configuration, error) {
@@ -39,21 +48,25 @@ func Load(configFile string, sess *session.Session) (Configuration, error) {
 		return Configuration{}, errors.Wrap(err, "unmarshalling config")
 	}
 
-	cfg.DB, err = getDBConfig(cfg.AWSSecretName, awservices.GetSecretsManager(sess, cfg.AWSRegion))
+	scfg, err := getSecretConfig(cfg.AWSSecretName, awservices.GetSecretsManager(sess, cfg.AWSRegion))
 	if err != nil {
-		return Configuration{}, errors.Wrap(err, "getting DB config")
+		return Configuration{}, errors.Wrap(err, "getting secret config")
 	}
+
+	cfg.DB = scfg.Postgres
+	cfg.CognitoConfig = scfg.Cognito
+
 	return cfg, nil
 }
 
-func getDBConfig(secret string, manager *awservices.SecretsManager) (cfg db.Config, err error) {
+func getSecretConfig(secret string, manager *awservices.SecretsManager) (cfg SecretConfig, err error) {
 	secretValue, err := manager.Secret.GetSecretValue(&secretsmanager.GetSecretValueInput{
 		SecretId:     aws.String(secret),
 		VersionId:    nil,
 		VersionStage: nil,
 	})
 	if err != nil {
-		return db.Config{}, errors.Wrap(err, "retrieving secret from AWS Secret Manager")
+		return SecretConfig{}, errors.Wrap(err, "retrieving secret from AWS Secret Manager")
 	}
 
 	err = json.Unmarshal([]byte(*secretValue.SecretString), &cfg)
