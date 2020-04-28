@@ -31,14 +31,20 @@ Response:
 ```
 ### CONFIGURATION  
 Staff manager requires setted up [AWS Credentials](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html)  
-Postgres credentials should be stored in AWS Secret Manager:  
+Secret configuration should be stored in AWS Secret Manager:  
 ```json
-{  
-  "Host": "localhost",  
-  "Port": "5431",  
-  "User": "app",  
-  "Password": "1337", 
-  "DataBaseName": "staff_manager"  
+{
+  "Postgres": {
+    "Host": "localhost",
+    "Port": "5431",
+    "User": "app",
+    "Password": "1337",
+    "DataBaseName": "staff_manager"
+  },
+  "Cognito": {
+    "ClientID": "",
+    "UserPoolID": ""
+  }
 }
 ```   
 Other configuration can be changed in [config.json](./config.json) 
