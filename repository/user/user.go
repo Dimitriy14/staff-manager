@@ -31,18 +31,18 @@ type repo struct {
 	es *elasticsearch.Client
 }
 
-func (r *repo) GetUserByID(ctx context.Context, id string) (models.UserRegistration, error) {
+func (r *repo) GetUserByID(ctx context.Context, id string) (models.User, error) {
 	resp, err := r.es.ESClient.Get().Index(elasticIndex).Type(userType).Id(id).Do(ctx)
 	if err != nil {
-		return models.UserRegistration{}, err
+		return models.User{}, err
 	}
 
-	var u models.UserRegistration
+	var u models.User
 	err = json.Unmarshal(*resp.Source, &u)
 	return u, err
 }
 
-func (r *repo) Save(ctx context.Context, u models.UserRegistration) error {
+func (r *repo) Save(ctx context.Context, u models.User) error {
 	_, err := r.es.ESClient.Index().
 		Index(elasticIndex).
 		Type(userType).
@@ -53,7 +53,7 @@ func (r *repo) Save(ctx context.Context, u models.UserRegistration) error {
 	return err
 }
 
-func (r *repo) Update(ctx context.Context, u models.UserRegistration) error {
+func (r *repo) Update(ctx context.Context, u models.User) error {
 	_, err := r.es.ESClient.Update().
 		Index(elasticIndex).
 		Type(userType).
@@ -66,7 +66,7 @@ func (r *repo) Update(ctx context.Context, u models.UserRegistration) error {
 
 func (r *repo) SearchUsers(ctx context.Context, us models.UserSearch) ([]models.User, error) {
 	q := elastic.NewBoolQuery()
-	strs := strings.Split(us.ByName, " ")
+	strs := strings.Split(strings.TrimRight(us.ByName, " "), " ")
 	if us.ByPosition != "" {
 		q.Filter(elastic.NewMatchQuery(position, us.ByPosition))
 	}

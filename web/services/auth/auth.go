@@ -51,7 +51,7 @@ type authService struct {
 
 func (a *authService) SignUp(w http.ResponseWriter, r *http.Request) {
 	var (
-		u    models.UserRegistration
+		u    models.User
 		ctx  = r.Context()
 		txID = transactionID.FromContext(ctx)
 	)

@@ -7,7 +7,7 @@ import (
 )
 
 type UserRepository interface {
-	GetUserByID(ctx context.Context, id string) (models.UserRegistration, error)
-	Save(ctx context.Context, u models.UserRegistration) error
+	GetUserByID(ctx context.Context, id string) (models.User, error)
+	Save(ctx context.Context, u models.User) error
 	SearchUsers(ctx context.Context, user models.UserSearch) ([]models.User, error)
 }

@@ -24,10 +24,6 @@ type User struct {
 	Position    string    `json:"position"`
 	MobilePhone string    `json:"mobilePhone,omitempty"`
 	DateOfBirth string    `json:"dateOfBirth,omitempty"`
-}
-
-type UserRegistration struct {
-	User
 	Credentials
 }
 
@@ -38,5 +34,5 @@ type UserSearch struct {
 
 type Credentials struct {
 	Email    string `json:"email"`
-	Password string `json:"password,omitempty"`
+	Password string `json:"-"`
 }
