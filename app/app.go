@@ -9,12 +9,14 @@ import (
 	"github.com/Dimitriy14/staff-manager/db"
 	"github.com/Dimitriy14/staff-manager/elasticsearch"
 	"github.com/Dimitriy14/staff-manager/logger"
+	"github.com/Dimitriy14/staff-manager/repository/user"
 	authUsecase "github.com/Dimitriy14/staff-manager/usecases/auth"
 	"github.com/Dimitriy14/staff-manager/web"
 	"github.com/Dimitriy14/staff-manager/web/middlewares"
 	"github.com/Dimitriy14/staff-manager/web/services/auth"
 	"github.com/Dimitriy14/staff-manager/web/services/health"
 	"github.com/Dimitriy14/staff-manager/web/services/rest"
+	userServ "github.com/Dimitriy14/staff-manager/web/services/user"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 )
@@ -62,14 +64,17 @@ func LoadApplication(cfgFile string, signal chan os.Signal) (c Components, err e
 	c.ElasticSearch = es
 	c.shutdowns = append(c.shutdowns, es.Close)
 
+	userRepo := user.NewRepository(c.ElasticSearch)
 	authuc := authUsecase.NewAuthUsecase(c.Cognito, l)
 	restService := rest.NewRestService(l)
-	a := auth.NewAuthService(authUsecase.NewAuthUsecase(c.Cognito, l), restService, l)
+	a := auth.NewAuthService(authUsecase.NewAuthUsecase(c.Cognito, l), restService, userRepo, l)
+	uServ := userServ.NewUserService(restService, l, userRepo)
 	router := web.NewRouter(c.Configuration.URLPrefix,
 		web.Services{
 			Health:         health.GetHealth(cfg.ListenURL, restService, pg, es),
 			Rest:           restService,
 			Auth:           a,
+			User:           uServ,
 			LogMiddleware:  middlewares.LogMiddleware(l),
 			TxIDMiddleware: middlewares.AddIDRequestMiddleware,
 			AuthMiddleware: middlewares.AuthMiddleware(l, authuc, restService),

@@ -1,6 +1,7 @@
 package util
 
 import (
+	"context"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -73,4 +74,13 @@ func RetrieveSecureTokens(req *http.Request) (models.AuthOutput, error) {
 		AccessToken:  at.Value,
 		RefreshToken: rt.Value,
 	}, nil
+}
+
+func GetUserIDFromCtx(ctx context.Context) string {
+	userID := ctx.Value(models.IDAttribute)
+	id, ok := userID.(string)
+	if !ok {
+		return ""
+	}
+	return id
 }

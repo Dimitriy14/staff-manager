@@ -1,0 +1,268 @@
+swagger: "2.0"
+
+info:
+  version: 1.0.0
+  title: Agent Configuration MS API
+schemes:
+  - http
+basePath: /staff
+produces:
+  - application/json
+
+paths:
+  /health:
+    get:
+      description: application health check
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Health'
+            type: array
+      summary: application health check
+
+  /signup:
+    post:
+      consumes:
+        - application/json
+      description: User registration
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: user
+          schema:
+            $ref: '#/definitions/models.UserRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: User registration
+
+  /signin:
+    post:
+      consumes:
+        - application/json
+      description: User sign in
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: user
+          schema:
+            $ref: '#/definitions/models.Credentials'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.Error'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: User sign in
+
+  /password/required:
+    post:
+      consumes:
+        - application/json
+      description: Changing temporary password
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: user
+          schema:
+            $ref: '#/definitions/models.Credentials'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.Error'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Changing temporary password
+
+  /signout:
+    post:
+      tags:
+        - Authorised
+      consumes:
+        - application/json
+      description: Removes tokens from cookies
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Removes tokens from cookies
+
+  /user:
+    get:
+      tags:
+        - Authorised
+      consumes:
+        - application/json
+      description: Retrieves user data
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/common.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Retrieves user data
+
+  /user/search:
+    post:
+      tags:
+        - Authorised
+      consumes:
+        - application/json
+      description: Search user by name
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: user
+          schema:
+            $ref: '#/definitions/models.UserSearch'
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Search user by name
+
+
+
+definitions:
+
+  common.Error:
+    properties:
+      message:
+        type: string
+    type: object
+
+  models.UserRequest:
+    type: object
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      position:
+        type: string
+      email:
+        type: string
+
+  models.UserResponse:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      firstName:
+        type: string
+      lastName:
+        type: string
+      position:
+        type: string
+      email:
+        type: string
+
+  models.Credentials:
+    type: object
+    properties:
+      password:
+        type: string
+      email:
+        type: string
+
+  models.UserSearch:
+    type: object
+    properties:
+      name:
+        type: string
+        description: "Search can work with several symbols"
+      position:
+        type: string
+        description: "Should be provided full word (optional)"
+
+
+
+  models.Health:
+    properties:
+      currentTime:
+        type: string
+      startTime:
+        type: string
+      networkInterfaces:
+        type: array
+        items:
+          type: string
+      connections:
+        type: array
+        items:
+          type: object
+          properties:
+            serviceName:
+              type: string
+            activeNodes:
+              type: array
+              items:
+                type: string
+            downNodes:
+              type: array
+              items:
+                type: string
+
+  models.ResizeParams:
+    type: object
+    properties:
+      width:
+        type: integer
+      height:
+        type: integer

@@ -36,8 +36,9 @@ type auth struct {
 }
 
 const (
-	passwordAttribute = "PASSWORD"
-	usernameAttribute = "USERNAME"
+	passwordAttribute    = "PASSWORD"
+	newPasswordAttribute = "NEW_PASSWORD"
+	usernameAttribute    = "USERNAME"
 )
 
 func (a *auth) SignUp(ctx context.Context, email string, id uuid.UUID) error {
@@ -104,8 +105,8 @@ func (a *auth) RequiredPassword(ctx context.Context, email, password, session st
 	input := &cip.RespondToAuthChallengeInput{
 		ChallengeName: aws.String(cip.ChallengeNameTypeNewPasswordRequired),
 		ChallengeResponses: map[string]*string{
-			passwordAttribute: aws.String(password),
-			usernameAttribute: aws.String(email),
+			newPasswordAttribute: aws.String(password),
+			usernameAttribute:    aws.String(email),
 		},
 		ClientId: aws.String(a.cognito.ClientID),
 		Session:  aws.String(session),

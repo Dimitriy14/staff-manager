@@ -5,10 +5,14 @@ var UserRegistrationSchema = `
 {
     "type": "object",
 	"properties": {
-		"name": {
+		"firstName": {
 			"type": "string",
 			"minLength": 1
 		},
+        "lastName": {
+            "type": "string",
+			"minLength": 1
+        },
 		"position": {
 			"type": "string",
 			"minLength": 1
@@ -18,7 +22,7 @@ var UserRegistrationSchema = `
 			"pattern": "^[a-zA-Z0-9]+@[a-z0-9]+.[a-z]{2,4}$"
 		}
 	},
-	"required": ["name", "position", "email"],
+	"required": ["firstName", "lastName", "position", "email"],
     "additionalProperties": false
 }
 `

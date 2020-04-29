@@ -30,7 +30,7 @@ Response:
 }
 ```
 ### CONFIGURATION  
-Staff manager requires setted up [AWS Credentials](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html)  
+Staff manager requires set up [AWS Credentials](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html)  
 Secret configuration should be stored in AWS Secret Manager:  
 ```json
 {
@@ -47,4 +47,7 @@ Secret configuration should be stored in AWS Secret Manager:
   }
 }
 ```   
+ElasticSearch requires creating template [user-template.json](./user-template.json):  
+`curl -X PUT 0.0.0.0:9200/_template/staff -d user-template.json`  
+
 Other configuration can be changed in [config.json](./config.json) 

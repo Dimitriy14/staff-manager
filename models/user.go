@@ -19,8 +19,8 @@ type AuthOutput struct {
 
 type User struct {
 	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"name"`
-	SecondName  string    `json:"secondName"`
+	FirstName   string    `json:"firstName"`
+	LastName    string    `json:"lastName"`
 	Position    string    `json:"position"`
 	MobilePhone string    `json:"mobilePhone,omitempty"`
 	DateOfBirth string    `json:"dateOfBirth,omitempty"`
@@ -31,7 +31,12 @@ type UserRegistration struct {
 	Credentials
 }
 
+type UserSearch struct {
+	ByName     string `json:"name"`
+	ByPosition string `json:"position"`
+}
+
 type Credentials struct {
 	Email    string `json:"email"`
-	Password string `json:"password"`
+	Password string `json:"password,omitempty"`
 }

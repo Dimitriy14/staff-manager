@@ -6,12 +6,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 
 	"github.com/Dimitriy14/staff-manager/logger"
 	transactionID "github.com/Dimitriy14/staff-manager/logger/transaction-id"
 )
 
-func LogMiddleware(log logger.Logger) func(next http.Handler) http.Handler {
+func LogMiddleware(log logger.Logger) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			var (

@@ -1,0 +1,24 @@
+{
+    "index_patterns": ["*"],
+    "settings": {
+        "number_of_shards": 1
+    },
+    "mappings": {
+        "user": {
+            "properties": {
+                "firstName": {
+                    "type": "text"
+                },
+                "lastName": {
+                    "type": "text"
+                },
+                "position": {
+                    "type": "text"
+                },
+                "email": {
+                    "type": "text"
+                }
+            }
+        }
+    }
+}

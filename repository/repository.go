@@ -1,7 +1,13 @@
 package repository
 
-import "github.com/Dimitriy14/staff-manager/models"
+import (
+	"context"
+
+	"github.com/Dimitriy14/staff-manager/models"
+)
 
 type UserRepository interface {
-	Save(u models.User) error
+	GetUserByID(ctx context.Context, id string) (models.UserRegistration, error)
+	Save(ctx context.Context, u models.UserRegistration) error
+	SearchUsers(ctx context.Context, user models.UserSearch) ([]models.User, error)
 }

@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Dimitriy14/staff-manager/repository"
+
 	"github.com/Dimitriy14/staff-manager/json-validator/schemas"
 	"github.com/Dimitriy14/staff-manager/util"
 
@@ -31,11 +33,12 @@ type Service interface {
 	SignOut(w http.ResponseWriter, r *http.Request)
 }
 
-func NewAuthService(authentication auth.Authentication, r *rest.Service, log logger.Logger) *authService {
+func NewAuthService(authentication auth.Authentication, r *rest.Service, user repository.UserRepository, log logger.Logger) *authService {
 	return &authService{
 		authentication: authentication,
 		r:              r,
 		log:            log,
+		user:           user,
 	}
 }
 
@@ -43,6 +46,7 @@ type authService struct {
 	authentication auth.Authentication
 	r              *rest.Service
 	log            logger.Logger
+	user           repository.UserRepository
 }
 
 func (a *authService) SignUp(w http.ResponseWriter, r *http.Request) {
@@ -71,6 +75,13 @@ func (a *authService) SignUp(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		a.log.Warnf(txID, "cannot sign up user due to: err=%s", err)
 		a.r.SendInternalServerError(ctx, w, "cannot sign up user due to: err=%s", err)
+		return
+	}
+
+	err = a.user.Save(ctx, u)
+	if err != nil {
+		a.log.Warnf(txID, "cannot save user due to: err=%s", err)
+		a.r.SendInternalServerError(ctx, w, "cannot save user due to: err=%s", err)
 		return
 	}
 

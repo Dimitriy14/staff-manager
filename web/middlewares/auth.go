@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/gorilla/mux"
+
 	"github.com/Dimitriy14/staff-manager/logger"
 	transactionID "github.com/Dimitriy14/staff-manager/logger/transaction-id"
 	"github.com/Dimitriy14/staff-manager/models"
@@ -12,7 +14,7 @@ import (
 	"github.com/Dimitriy14/staff-manager/web/services/rest"
 )
 
-func AuthMiddleware(log logger.Logger, auth auth.Authentication, service *rest.Service) func(next http.Handler) http.Handler {
+func AuthMiddleware(log logger.Logger, auth auth.Authentication, service *rest.Service) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			var (
