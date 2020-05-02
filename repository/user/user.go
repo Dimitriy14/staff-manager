@@ -53,7 +53,18 @@ func (r *repo) Save(ctx context.Context, u models.User) error {
 	return err
 }
 
-func (r *repo) Update(ctx context.Context, u models.User) error {
+func (r *repo) Update(ctx context.Context, u models.UserUpdate) error {
+	_, err := r.es.ESClient.Update().
+		Index(elasticIndex).
+		Type(userType).
+		Doc(u).
+		Id(u.ID).
+		Do(ctx)
+
+	return err
+}
+
+func (r *repo) AdminUpdate(ctx context.Context, u models.User) error {
 	_, err := r.es.ESClient.Update().
 		Index(elasticIndex).
 		Type(userType).

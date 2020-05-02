@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/Dimitriy14/staff-manager/web/services/auth"
@@ -8,6 +9,11 @@ import (
 	"github.com/Dimitriy14/staff-manager/web/services/user"
 
 	"github.com/gorilla/mux"
+)
+
+const (
+	// UUIDPattern a pattern for UUID matchers
+	UUIDPattern = `(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})`
 )
 
 type Services struct {
@@ -18,6 +24,7 @@ type Services struct {
 	LogMiddleware  mux.MiddlewareFunc
 	TxIDMiddleware mux.MiddlewareFunc
 	AuthMiddleware mux.MiddlewareFunc
+	AdminOnly      mux.MiddlewareFunc
 }
 
 func NewRouter(pathPrefix string, s Services) *mux.Router {
@@ -34,7 +41,15 @@ func NewRouter(pathPrefix string, s Services) *mux.Router {
 	router.Path("/password/required").HandlerFunc(s.Auth.RequiredPassword).Methods(http.MethodPost)
 	authorisation.Path("/signout").HandlerFunc(s.Auth.SignOut).Methods(http.MethodPost)
 
-	authorisation.Path("/user").HandlerFunc(s.User.GetUser).Methods(http.MethodGet)
 	authorisation.Path("/user/search").HandlerFunc(s.User.Search).Methods(http.MethodPost)
+	authorisation.Path("/user").HandlerFunc(s.User.GetUser).Methods(http.MethodGet)
+	authorisation.Path("/user").HandlerFunc(s.User.Update).Methods(http.MethodPut)
+
+	authorisation.Path(fmt.Sprintf("/user/{id:%s}", UUIDPattern)).HandlerFunc(s.User.GetCollege).Methods(http.MethodGet)
+
+	adminOnly := authorisation.Name("admin").Subrouter()
+	adminOnly.Use(s.AdminOnly)
+	adminOnly.Path(fmt.Sprintf("/user/{id:%s}", UUIDPattern)).HandlerFunc(s.User.AdminUserUpdate).Methods(http.MethodPut)
+
 	return router
 }

@@ -4,8 +4,18 @@ import (
 	"github.com/google/uuid"
 )
 
+type Key string
+type Role string
+
 const (
-	IDAttribute = "custom:id"
+	AccessKey Key = "user-access"
+
+	IDAttribute    = "custom:id"
+	RoleAttribute  = "custom:role"
+	EmailAttribute = "email"
+
+	AdminRole Role = "admin"
+	UserRole  Role = "user"
 
 	AccessToken  = "access_token"
 	RefreshToken = "refresh_token"
@@ -24,7 +34,23 @@ type User struct {
 	Position    string    `json:"position"`
 	MobilePhone string    `json:"mobilePhone,omitempty"`
 	DateOfBirth string    `json:"dateOfBirth,omitempty"`
+	ImageURL    string    `json:"imageURL,omitempty"`
+	Image       string    `json:"image,omitempty"`
+	Role        Role      `json:"role"`
 	Credentials
+}
+
+type UserUpdate struct {
+	ID          string `json:"id"`
+	MobilePhone string `json:"mobilePhone,omitempty"`
+	DateOfBirth string `json:"dateOfBirth,omitempty"`
+	ImageURL    string `json:"imageURL,omitempty"`
+}
+
+type UserAccess struct {
+	Email  string `json:"email"`
+	UserID string `json:"userID"`
+	Role   Role   `json:"role"`
 }
 
 type UserSearch struct {
@@ -34,5 +60,9 @@ type UserSearch struct {
 
 type Credentials struct {
 	Email    string `json:"email"`
-	Password string `json:"-"`
+	Password string `json:"password,omitempty"`
+}
+
+func (r Role) IsAdmin() bool {
+	return r == AdminRole
 }

@@ -14,6 +14,8 @@ var (
 	schemaNames = map[string]string{
 		schemas.UserRegistration: schemas.UserRegistrationSchema,
 		schemas.SignIn:           schemas.SignInSchema,
+		schemas.UserUpdate:       schemas.UserUpdateSchema,
+		schemas.AdminUserUpdate:  schemas.AdminUserUpdateSchema,
 	}
 
 	schemasMap = map[string]*gojsonschema.Schema{}

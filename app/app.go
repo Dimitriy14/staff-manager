@@ -68,7 +68,7 @@ func LoadApplication(cfgFile string, signal chan os.Signal) (c Components, err e
 	authuc := authUsecase.NewAuthUsecase(c.Cognito, l)
 	restService := rest.NewRestService(l)
 	a := auth.NewAuthService(authUsecase.NewAuthUsecase(c.Cognito, l), restService, userRepo, l)
-	uServ := userServ.NewUserService(restService, l, userRepo)
+	uServ := userServ.NewUserService(restService, l, userRepo, authuc)
 	router := web.NewRouter(c.Configuration.URLPrefix,
 		web.Services{
 			Health:         health.GetHealth(cfg.ListenURL, restService, pg, es),
@@ -78,6 +78,7 @@ func LoadApplication(cfgFile string, signal chan os.Signal) (c Components, err e
 			LogMiddleware:  middlewares.LogMiddleware(l),
 			TxIDMiddleware: middlewares.AddIDRequestMiddleware,
 			AuthMiddleware: middlewares.AuthMiddleware(l, authuc, restService),
+			AdminOnly:      middlewares.AdminRestriction(l, restService),
 		})
 	server := web.NewServer(cfg.ListenURL, router, l, signal)
 	server.Start()

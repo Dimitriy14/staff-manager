@@ -76,11 +76,11 @@ func RetrieveSecureTokens(req *http.Request) (models.AuthOutput, error) {
 	}, nil
 }
 
-func GetUserIDFromCtx(ctx context.Context) string {
-	userID := ctx.Value(models.IDAttribute)
-	id, ok := userID.(string)
+func GetUserAccessFromCtx(ctx context.Context) models.UserAccess {
+	userID := ctx.Value(models.AccessKey)
+	id, ok := userID.(*models.UserAccess)
 	if !ok {
-		return ""
+		return models.UserAccess{}
 	}
-	return id
+	return *id
 }

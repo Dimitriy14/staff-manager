@@ -71,7 +71,7 @@ func (a *authService) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 	u.ID = uuid.New()
 
-	err = a.authentication.SignUp(ctx, u.Email, u.ID)
+	err = a.authentication.SignUp(ctx, u)
 	if err != nil {
 		a.log.Warnf(txID, "cannot sign up user due to: err=%s", err)
 		a.r.SendInternalServerError(ctx, w, "cannot sign up user due to: err=%s", err)
@@ -138,8 +138,15 @@ func (a *authService) passwordChangeRequired(ctx context.Context, w http.Respons
 }
 
 func (a *authService) successfullyAuthorised(ctx context.Context, w http.ResponseWriter, aout *models.AuthOutput) {
+	ua, _, err := a.authentication.GetUserAccess(ctx, aout.AccessToken)
+	if err != nil {
+		a.log.Errorf(transactionID.FromContext(ctx), "Access token was failed")
+		a.r.SendInternalServerError(ctx, w, "cannot sign in due to: %s", err)
+		return
+	}
+
 	util.SetSecureTokens(*aout, w)
-	a.r.RenderJSON(ctx, w, struct{}{})
+	a.r.RenderJSON(ctx, w, ua)
 }
 
 func (a *authService) RequiredPassword(w http.ResponseWriter, r *http.Request) {

@@ -11,16 +11,16 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	cip "github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
 type Authentication interface {
-	SignUp(ctx context.Context, username string, id uuid.UUID) error
+	SignUp(ctx context.Context, user models.User) error
 	SignIn(ctx context.Context, username, password string) (aout *models.AuthOutput, err error)
 	RequiredPassword(ctx context.Context, username, password, session string) (aout *models.AuthOutput, err error)
-	GetUserID(ctx context.Context, token string) (id string, isTokenExpired bool, err error)
+	GetUserAccess(ctx context.Context, token string) (ua *models.UserAccess, isTokenExpired bool, err error)
 	RefreshToken(ctx context.Context, oldToken string) (aout *models.AuthOutput, err error)
+	UpdateUserRole(ctx context.Context, email string, role models.Role) error
 }
 
 func NewAuthUsecase(cognito *awservices.CognitoProvider, log logger.Logger) *auth {
@@ -41,21 +41,27 @@ const (
 	usernameAttribute    = "USERNAME"
 )
 
-func (a *auth) SignUp(ctx context.Context, email string, id uuid.UUID) error {
-	txID := transactionID.FromContext(ctx)
+func (a *auth) SignUp(ctx context.Context, user models.User) error {
+	var (
+		txID = transactionID.FromContext(ctx)
+	)
+
 	input := &cip.AdminCreateUserInput{
 		DesiredDeliveryMediums: []*string{aws.String(cip.DeliveryMediumTypeEmail)},
 		UserAttributes: []*cip.AttributeType{
 			{
 				Name:  aws.String(cip.VerifiedAttributeTypeEmail),
-				Value: aws.String(email),
+				Value: aws.String(user.Email),
 			}, {
 				Name:  aws.String(models.IDAttribute),
-				Value: aws.String(id.String()),
+				Value: aws.String(user.ID.String()),
+			}, {
+				Name:  aws.String(models.RoleAttribute),
+				Value: aws.String(string(user.Role)),
 			},
 		},
 		UserPoolId: aws.String(a.cognito.UserPoolID),
-		Username:   aws.String(email),
+		Username:   aws.String(user.Email),
 	}
 
 	_, err := a.cognito.Provider.AdminCreateUser(input)
@@ -91,7 +97,6 @@ func (a *auth) SignIn(ctx context.Context, email, password string) (*models.Auth
 	}
 
 	if out.AuthenticationResult != nil && out.AuthenticationResult.AccessToken != nil {
-		a.log.Infof(txID, "AuthenticationResult: %#v", out.AuthenticationResult)
 		return &models.AuthOutput{
 			AccessToken:  *out.AuthenticationResult.AccessToken,
 			RefreshToken: *out.AuthenticationResult.RefreshToken,
@@ -127,26 +132,34 @@ func (a *auth) RequiredPassword(ctx context.Context, email, password, session st
 	return nil, errors.New(fmt.Sprintf("Invalid authentication output:%+v", out))
 }
 
-func (a *auth) GetUserID(ctx context.Context, token string) (string, bool, error) {
-	txID := transactionID.FromContext(ctx)
-	input := &cip.GetUserInput{AccessToken: aws.String(token)}
+func (a *auth) GetUserAccess(ctx context.Context, token string) (*models.UserAccess, bool, error) {
+	var (
+		txID  = transactionID.FromContext(ctx)
+		input = &cip.GetUserInput{AccessToken: aws.String(token)}
+		ua    models.UserAccess
+	)
 
 	out, err := a.cognito.Provider.GetUser(input)
 	if err != nil {
 		a.log.Warnf(txID, "got an error while retrieving user(%v)", err)
 		if _, ok := err.(*cip.NotAuthorizedException); ok {
-			return "", true, nil
+			return nil, true, nil
 		}
-		return "", false, err
+		return nil, false, err
 	}
 
 	for _, attribute := range out.UserAttributes {
-		if *attribute.Name == models.IDAttribute {
-			return *attribute.Value, false, nil
+		switch *attribute.Name {
+		case models.IDAttribute:
+			ua.UserID = *attribute.Value
+		case models.RoleAttribute:
+			ua.Role = models.Role(*attribute.Value)
+		case models.EmailAttribute:
+			ua.Email = *attribute.Value
 		}
 	}
 
-	return "", false, errors.New(fmt.Sprintf("Invalid authentication output:%+v", out))
+	return &ua, false, nil
 }
 
 func (a *auth) RefreshToken(ctx context.Context, refreshToken string) (*models.AuthOutput, error) {
@@ -176,4 +189,28 @@ func (a *auth) RefreshToken(ctx context.Context, refreshToken string) (*models.A
 	}
 
 	return nil, errors.New(fmt.Sprintf("Invalid authentication output:%+v", out))
+}
+
+func (a *auth) UpdateUserRole(ctx context.Context, email string, role models.Role) error {
+	var (
+		txID = transactionID.FromContext(ctx)
+	)
+
+	input := &cip.AdminUpdateUserAttributesInput{
+		UserAttributes: []*cip.AttributeType{
+			{
+				Name:  aws.String(models.RoleAttribute),
+				Value: aws.String(string(role)),
+			},
+		},
+		UserPoolId: aws.String(a.cognito.UserPoolID),
+		Username:   aws.String(email),
+	}
+
+	_, err := a.cognito.Provider.AdminUpdateUserAttributes(input)
+	if err != nil {
+		a.log.Warnf(txID, "cannot update user role in cognito: err=%s", err)
+		return err
+	}
+	return nil
 }
