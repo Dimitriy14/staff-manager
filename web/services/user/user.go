@@ -196,7 +196,7 @@ func (u *userService) adminUpdate(w http.ResponseWriter, r *http.Request, id str
 		return
 	}
 
-	err = u.user.AdminUpdate(ctx, newUser)
+	err = u.user.Update(ctx, newUser)
 	if err != nil {
 		u.log.Warnf(txID, "cannot search user by id(%s): err=%s", id, err)
 		u.r.SendInternalServerError(ctx, w, "cannot search user by id(%s): err=%s", id, err)
