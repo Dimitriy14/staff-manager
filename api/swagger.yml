@@ -127,7 +127,7 @@ paths:
         - Authorised
       consumes:
         - application/json
-      description: Retrieves user data
+      description: Retrieves authorised user data
       produces:
         - application/json
       responses:
@@ -144,6 +144,87 @@ paths:
           schema:
             $ref: '#/definitions/common.Error'
       summary: Retrieves user data
+    put:
+      tags:
+        - Authorised
+      consumes:
+        - application/json
+      description: Updates basic user data
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: user
+          schema:
+            $ref: '#/definitions/models.UserUpdate'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/common.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Updates basic user data
+
+  /user/{id}:
+    get:
+      tags:
+        - Authorised
+      consumes:
+        - application/json
+      description: Retrieves user data
+      parameters:
+        - $ref: '#/parameters/ObjectID'
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/common.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Retrieves user data
+    put:
+      tags:
+        - Admin Only
+      consumes:
+        - application/json
+      description: Updates full user data
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/ObjectID'
+        - in: body
+          name: user
+          schema:
+            $ref: '#/definitions/models.AdminUserUpdate'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/common.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Updates full user data
 
   /user/search:
     post:
@@ -197,6 +278,9 @@ definitions:
         type: string
       email:
         type: string
+      role:
+        type: string
+        enum: ["admin", "user"]
 
   models.UserResponse:
     type: object
@@ -212,6 +296,13 @@ definitions:
         type: string
       email:
         type: string
+      role:
+        type: string
+        enum: [admin, user]
+      mobilePhone:
+        type: string
+      dateOfBirth:
+        type: string
 
   models.Credentials:
     type: object
@@ -220,6 +311,31 @@ definitions:
         type: string
       email:
         type: string
+
+  models.UserUpdate:
+    type: object
+    properties:
+      mobilePhone:
+        type: string
+      dateOfBirth:
+        type: string
+
+  models.AdminUserUpdate:
+    type: object
+    properties:
+      mobilePhone:
+        type: string
+      dateOfBirth:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      position:
+        type: string
+      role:
+        type: string
+        enum: ["admin", "user"]
 
   models.UserSearch:
     type: object
@@ -259,10 +375,12 @@ definitions:
               items:
                 type: string
 
-  models.ResizeParams:
-    type: object
-    properties:
-      width:
-        type: integer
-      height:
-        type: integer
+
+parameters:
+  ObjectID:
+    in: path
+    name: id
+    type: string
+    format: uuid
+    required: true
+

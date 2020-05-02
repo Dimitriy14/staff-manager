@@ -112,8 +112,10 @@ func (u *userService) Update(w http.ResponseWriter, r *http.Request) {
 		ua   = util.GetUserAccessFromCtx(ctx)
 	)
 
-	if ua.Role.IsAdmin() {
-		u.adminUpdate(w, r, ua.UserID)
+	oldUser, err := u.user.GetUserByID(ctx, ua.UserID)
+	if err != nil {
+		u.log.Warnf(txID, "cannot find user by id(%s): err=%s", ua.UserID, err)
+		u.r.SendInternalServerError(ctx, w, "cannot find user by id(%s): err=%s", ua.UserID, err)
 		return
 	}
 
@@ -132,15 +134,16 @@ func (u *userService) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user.ID = ua.UserID
-	err = u.user.Update(ctx, user)
+	oldUser.MobilePhone = user.MobilePhone
+	oldUser.DateOfBirth = user.DateOfBirth
+	err = u.user.Update(ctx, oldUser)
 	if err != nil {
-		u.log.Warnf(txID, "cannot search user by id(%s): err=%s", ua.UserID, err)
-		u.r.SendInternalServerError(ctx, w, "cannot search user by id(%s): err=%s", ua.UserID, err)
+		u.log.Warnf(txID, "cannot Update user by id(%s): err=%s", ua.UserID, err)
+		u.r.SendInternalServerError(ctx, w, "cannot Update user by id(%s): err=%s", ua.UserID, err)
 		return
 	}
 
-	u.r.RenderJSON(ctx, w, user)
+	u.r.RenderJSON(ctx, w, oldUser)
 }
 
 func (u *userService) AdminUserUpdate(w http.ResponseWriter, r *http.Request) {
