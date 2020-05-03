@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/rs/cors"
+	"github.com/urfave/negroni"
+
 	"github.com/Dimitriy14/staff-manager/web/services/auth"
 	"github.com/Dimitriy14/staff-manager/web/services/rest"
 	"github.com/Dimitriy14/staff-manager/web/services/user"
@@ -51,5 +54,16 @@ func NewRouter(pathPrefix string, s Services) *mux.Router {
 	adminOnly.Use(s.AdminOnly)
 	adminOnly.Path(fmt.Sprintf("/user/{id:%s}", UUIDPattern)).HandlerFunc(s.User.AdminUserUpdate).Methods(http.MethodPut)
 
-	return router
+	var corsRouter = mux.NewRouter()
+	{
+		corsRouter.PathPrefix(pathPrefix).Handler(negroni.New(
+			cors.New(cors.Options{
+				AllowCredentials: true,
+				AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
+			}),
+			negroni.Wrap(router),
+		))
+	}
+
+	return corsRouter
 }
