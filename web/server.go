@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -20,9 +21,10 @@ func NewServer(addr string, handler http.Handler, log logger.Logger, signal chan
 	middlewareManger.Use(negroniLog)
 	middlewareManger.UseHandler(handler)
 
+	port := os.Getenv("PORT")
 	return &server{
 		server: http.Server{
-			Addr:    addr,
+			Addr:    fmt.Sprintf(":%s", port),
 			Handler: middlewareManger,
 		},
 		signal: signal,
