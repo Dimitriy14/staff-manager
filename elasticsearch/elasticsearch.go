@@ -49,7 +49,7 @@ func Load(cfg Config, log logger.Logger) (*Client, error) {
 		return nil, errors.Wrap(err, "can't establish connection to ElasticSearch")
 	}
 
-	c := &Client{ESClient: esClient, httpClient: httpClient, urls: cfg.URLs}
+	c := &Client{ESClient: esClient, httpClient: httpClient, urls: []string{u}}
 
 	return c, nil
 }
