@@ -58,7 +58,8 @@ func NewRouter(pathPrefix string, s Services) *mux.Router {
 	{
 		corsRouter.PathPrefix(pathPrefix).Handler(negroni.New(
 			cors.New(cors.Options{
-				AllowedMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
+				AllowCredentials: true,
+				AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
 			}),
 			negroni.Wrap(router),
 		))
