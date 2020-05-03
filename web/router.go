@@ -64,5 +64,5 @@ func NewRouter(pathPrefix string, s Services) *mux.Router {
 		))
 	}
 
-	return router
+	return corsRouter
 }
