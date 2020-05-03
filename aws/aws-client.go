@@ -4,6 +4,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 )
 
@@ -15,6 +16,10 @@ type CognitoProvider struct {
 
 type SecretsManager struct {
 	Secret *secretsmanager.SecretsManager
+}
+
+type S3Manager struct {
+	*s3manager.Uploader
 }
 
 func GetSecretsManager(sess *session.Session, awsRegion string) *SecretsManager {
@@ -31,4 +36,8 @@ func GetCognitoProvider(sess *session.Session, awsRegion, userPoolID, clientID s
 			Region: aws.String(awsRegion),
 		}),
 	}
+}
+
+func GetS3Manager(sess *session.Session) *S3Manager {
+	return &S3Manager{Uploader: s3manager.NewUploader(sess)}
 }

@@ -3,6 +3,7 @@ package user
 import (
 	"encoding/json"
 	"net/http"
+	"path/filepath"
 
 	"github.com/Dimitriy14/staff-manager/usecases/auth"
 
@@ -18,6 +19,8 @@ import (
 	"github.com/Dimitriy14/staff-manager/util"
 	"github.com/Dimitriy14/staff-manager/web/services/rest"
 )
+
+const maxImageSize int64 = 10 << 24 // max image size is 10MB
 
 type Service interface {
 	Search(w http.ResponseWriter, r *http.Request)
@@ -204,4 +207,12 @@ func (u *userService) adminUpdate(w http.ResponseWriter, r *http.Request, id str
 	}
 
 	u.r.RenderJSON(ctx, w, newUser)
+}
+
+func (u *userService) UploadImage(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseMultipartForm(maxImageSize)
+
+	file, header, err := r.FormFile("file")
+
+	filepath.Ext(header.Filename)
 }
