@@ -58,6 +58,7 @@ func NewRouter(pathPrefix string, s Services) *mux.Router {
 	{
 		corsRouter.PathPrefix(pathPrefix).Handler(negroni.New(
 			cors.New(cors.Options{
+				AllowedOrigins:   []string{"http://localhost:3000"},
 				AllowCredentials: true,
 				AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
 			}),
