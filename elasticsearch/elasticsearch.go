@@ -3,6 +3,7 @@ package elasticsearch
 import (
 	"context"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/Dimitriy14/staff-manager/logger"
@@ -38,8 +39,9 @@ func Load(cfg Config, log logger.Logger) (*Client, error) {
 		Timeout:   time.Duration(cfg.IdleConnTimeoutInSec) * time.Second,
 	}
 
+	u := os.Getenv("BONSAI_URL")
 	esClient, err := elastic.NewSimpleClient(
-		elastic.SetURL(cfg.URLs...),
+		elastic.SetURL(u),
 		elastic.SetHttpClient(httpClient),
 		elastic.SetErrorLog(logger.NewElasticLogger(log)),
 	)

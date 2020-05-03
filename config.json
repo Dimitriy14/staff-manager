@@ -2,12 +2,12 @@
     "ListenURL": ":1234",
     "URLPrefix": "/staff",
     "Logger": {
-        "UseFile": true,
+        "UseFile": false,
         "FileName": "staff-manager.log",
         "LogLevel": "DEBUG"
     },
 
-    "AWSSecretName": "local/db/postgres",
+    "AWSSecretName": "heroku/secrets",
     "AWSRegion": "eu-central-1",
 
     "ElasticSearch": {
