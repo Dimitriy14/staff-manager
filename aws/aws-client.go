@@ -38,6 +38,10 @@ func GetCognitoProvider(sess *session.Session, awsRegion, userPoolID, clientID s
 	}
 }
 
-func GetS3Manager(sess *session.Session) *S3Manager {
-	return &S3Manager{Uploader: s3manager.NewUploader(sess)}
+func GetS3Manager(sess *session.Session, awsRegion string) *S3Manager {
+	newSess := sess.Copy(&aws.Config{
+		Region: aws.String(awsRegion),
+	})
+
+	return &S3Manager{Uploader: s3manager.NewUploader(newSess)}
 }
