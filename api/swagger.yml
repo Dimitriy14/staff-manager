@@ -258,6 +258,37 @@ paths:
       summary: Search user by name
 
 
+  /user/photo:
+    post:
+      tags:
+        - Authorised
+      consumes:
+        - "multipart/form-data"
+      description: Upload user photo
+      produces:
+        - application/json
+      parameters:
+        - in: formData
+          name: photo
+          type: file
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Upload user photo
+
 
 definitions:
 
@@ -302,6 +333,8 @@ definitions:
       mobilePhone:
         type: string
       dateOfBirth:
+        type: string
+      imageURL:
         type: string
 
   models.Credentials:
