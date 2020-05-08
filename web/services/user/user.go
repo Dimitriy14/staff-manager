@@ -2,7 +2,11 @@ package user
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
+	"path/filepath"
+
+	"github.com/Dimitriy14/staff-manager/usecases/photos"
 
 	"github.com/Dimitriy14/staff-manager/usecases/auth"
 
@@ -19,6 +23,21 @@ import (
 	"github.com/Dimitriy14/staff-manager/web/services/rest"
 )
 
+const (
+	maxImageSize int64 = 10 << 24 // max image size is 10MB
+	photo              = "photo"
+)
+
+var (
+	imageExt = map[string]bool{
+		"image/jpeg": true,
+		"image/jpg":  true,
+		"image/gif":  true,
+		"image/png":  true,
+		"image/bmp":  true,
+	}
+)
+
 type Service interface {
 	Search(w http.ResponseWriter, r *http.Request)
 
@@ -27,22 +46,26 @@ type Service interface {
 
 	AdminUserUpdate(w http.ResponseWriter, r *http.Request)
 	Update(w http.ResponseWriter, r *http.Request)
+
+	UploadImage(w http.ResponseWriter, r *http.Request)
 }
 
-func NewUserService(r *rest.Service, log logger.Logger, user repository.UserRepository, a auth.Authentication) *userService {
+func NewUserService(r *rest.Service, log logger.Logger, user repository.UserRepository, a auth.Authentication, photo photos.Uploader) *userService {
 	return &userService{
-		r:    r,
-		log:  log,
-		user: user,
-		a:    a,
+		r:     r,
+		log:   log,
+		user:  user,
+		a:     a,
+		photo: photo,
 	}
 }
 
 type userService struct {
-	r    *rest.Service
-	log  logger.Logger
-	user repository.UserRepository
-	a    auth.Authentication
+	r     *rest.Service
+	log   logger.Logger
+	user  repository.UserRepository
+	a     auth.Authentication
+	photo photos.Uploader
 }
 
 func (u *userService) Search(w http.ResponseWriter, r *http.Request) {
@@ -188,6 +211,7 @@ func (u *userService) adminUpdate(w http.ResponseWriter, r *http.Request, id str
 	}
 	newUser.ID = userID
 	newUser.Email = oldUser.Email
+	newUser.ImageURL = oldUser.ImageURL
 
 	err = u.a.UpdateUserRole(ctx, newUser.Email, newUser.Role)
 	if err != nil {
@@ -204,4 +228,63 @@ func (u *userService) adminUpdate(w http.ResponseWriter, r *http.Request, id str
 	}
 
 	u.r.RenderJSON(ctx, w, newUser)
+}
+
+func (u *userService) UploadImage(w http.ResponseWriter, r *http.Request) {
+	var (
+		ctx  = r.Context()
+		txID = transactionID.FromContext(ctx)
+		ua   = util.GetUserAccessFromCtx(ctx)
+	)
+
+	err := r.ParseMultipartForm(maxImageSize)
+	if err != nil {
+		u.log.Warnf(txID, "cannot parse multipart form due to: err=%s", err)
+		u.r.SendBadRequest(ctx, w, "cannot parse multipart form due to: err=%s", err)
+		return
+	}
+
+	file, header, err := r.FormFile(photo)
+	if err != nil {
+		u.log.Warnf(txID, "cannot retrieve photo from form: err=%s", err)
+		u.r.SendBadRequest(ctx, w, "cannot retrieve photo from form: err=%s", err)
+		return
+	}
+
+	imageContent, err := ioutil.ReadAll(file)
+	if err != nil {
+		u.log.Warnf(txID, "cannot read photo content: err=%s", err)
+		u.r.SendBadRequest(ctx, w, "cannot read photo content: err=%s", err)
+		return
+	}
+
+	if !imageExt[http.DetectContentType(imageContent)] {
+		u.log.Warnf(txID, "invalid file extension: is not an image")
+		u.r.SendBadRequest(ctx, w, "invalid file extension: is not an image")
+		return
+	}
+
+	user, err := u.user.GetUserByID(ctx, ua.UserID)
+	if err != nil {
+		u.log.Warnf(txID, "cannot search user by id(%s): err=%s", ua.UserID, err)
+		u.r.SendInternalServerError(ctx, w, "cannot search user by id(%s): err=%s", ua.UserID, err)
+		return
+	}
+
+	link, err := u.photo.Upload(ctx, filepath.Ext(header.Filename), imageContent)
+	if err != nil {
+		u.log.Warnf(txID, "cannot upload user photo: err=%s", err)
+		u.r.SendInternalServerError(ctx, w, "cannot upload user photo: err=%s", err)
+		return
+	}
+
+	user.ImageURL = link
+	err = u.user.Update(ctx, user)
+	if err != nil {
+		u.log.Warnf(txID, "cannot update user id(%s): err=%s", ua.UserID, err)
+		u.r.SendInternalServerError(ctx, w, "cannot update user id(%s): err=%s", ua.UserID, err)
+		return
+	}
+
+	u.r.RenderJSON(ctx, w, user)
 }

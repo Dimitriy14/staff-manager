@@ -6,9 +6,11 @@
         "FileName": "staff-manager.log",
         "LogLevel": "DEBUG"
     },
+    "OriginHosts": ["http://localhost:3000"],
 
     "AWSSecretName": "heroku/secrets",
     "AWSRegion": "eu-central-1",
+    "BucketName": "staff-users",
 
     "ElasticSearch": {
         "URLs": ["http://127.0.0.1:9200"],
