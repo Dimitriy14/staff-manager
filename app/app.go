@@ -11,6 +11,7 @@ import (
 	"github.com/Dimitriy14/staff-manager/logger"
 	"github.com/Dimitriy14/staff-manager/repository/user"
 	authUsecase "github.com/Dimitriy14/staff-manager/usecases/auth"
+	"github.com/Dimitriy14/staff-manager/usecases/photos"
 	"github.com/Dimitriy14/staff-manager/web"
 	"github.com/Dimitriy14/staff-manager/web/middlewares"
 	"github.com/Dimitriy14/staff-manager/web/services/auth"
@@ -68,8 +69,11 @@ func LoadApplication(cfgFile string, signal chan os.Signal) (c Components, err e
 	authuc := authUsecase.NewAuthUsecase(c.Cognito, l)
 	restService := rest.NewRestService(l)
 	a := auth.NewAuthService(authUsecase.NewAuthUsecase(c.Cognito, l), restService, userRepo, l)
-	uServ := userServ.NewUserService(restService, l, userRepo, authuc)
-	router := web.NewRouter(c.Configuration.URLPrefix,
+	photo := photos.NewPhotosUploader(awservices.GetS3Manager(sess, cfg.AWSRegion), cfg.StorageURL, cfg.BucketName)
+	uServ := userServ.NewUserService(restService, l, userRepo, authuc, photo)
+	router := web.NewRouter(
+		c.Configuration.URLPrefix,
+		c.Configuration.OriginHosts,
 		web.Services{
 			Health:         health.GetHealth(cfg.ListenURL, restService, pg, es),
 			Rest:           restService,

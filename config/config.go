@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 
 	awservices "github.com/Dimitriy14/staff-manager/aws"
@@ -20,8 +21,11 @@ type Configuration struct {
 	URLPrefix     string               `json:"URLPrefix"`
 	AWSSecretName string               `json:"AWSSecretName"`
 	AWSRegion     string               `json:"AWSRegion"`
+	OriginHosts   []string             `json:"OriginHosts"`
 	Logger        logger.Config        `json:"Logger"`
 	ElasticSearch elasticsearch.Config `json:"ElasticSearch"`
+	BucketName    string               `json:"BucketName"`
+	StorageURL    string
 	DB            db.Config
 	CognitoConfig
 }
@@ -55,6 +59,7 @@ func Load(configFile string, sess *session.Session) (Configuration, error) {
 
 	cfg.DB = scfg.Postgres
 	cfg.CognitoConfig = scfg.Cognito
+	cfg.StorageURL = fmt.Sprintf("https://%s.s3.%s.amazonaws.com", cfg.BucketName, cfg.AWSRegion)
 
 	return cfg, nil
 }

@@ -35,7 +35,6 @@ type User struct {
 	MobilePhone string    `json:"mobilePhone,omitempty"`
 	DateOfBirth string    `json:"dateOfBirth,omitempty"`
 	ImageURL    string    `json:"imageURL,omitempty"`
-	Image       string    `json:"image,omitempty"`
 	Role        Role      `json:"role"`
 	Credentials
 }
