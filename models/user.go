@@ -36,7 +36,17 @@ type User struct {
 	DateOfBirth string    `json:"dateOfBirth,omitempty"`
 	ImageURL    string    `json:"imageURL,omitempty"`
 	Role        Role      `json:"role"`
+	Mood        string    `json:"mood"`
 	Credentials
+}
+
+// assignement task, status task, newuser, vacation-approve
+type RecentChanges struct {
+	ID         uuid.UUID
+	UsedID     uuid.UUID
+	OwnerID    uuid.UUID
+	IncidentID uuid.UUID
+	Type       string
 }
 
 type UserUpdate struct {

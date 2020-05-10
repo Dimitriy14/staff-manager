@@ -6,7 +6,7 @@
         "FileName": "staff-manager.log",
         "LogLevel": "DEBUG"
     },
-    "OriginHosts": ["http://localhost:3000"],
+    "OriginHosts": ["http://localhost:3000", "https://staff-mgmt.netlify.app"],
 
     "AWSSecretName": "heroku/secrets",
     "AWSRegion": "eu-central-1",
