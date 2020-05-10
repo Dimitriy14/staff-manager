@@ -6,9 +6,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/olivere/elastic/v7"
 	"github.com/pkg/errors"
-
-	"github.com/olivere/elastic"
 
 	"github.com/Dimitriy14/staff-manager/elasticsearch"
 	"github.com/Dimitriy14/staff-manager/models"
@@ -38,7 +37,7 @@ func (r *repo) GetUserByID(ctx context.Context, id string) (models.User, error) 
 	}
 
 	var u models.User
-	err = json.Unmarshal(*resp.Source, &u)
+	err = json.Unmarshal(resp.Source, &u)
 	return u, err
 }
 
