@@ -84,3 +84,8 @@ func (r *Service) sendMessage(ctx context.Context, w http.ResponseWriter, code i
 	}
 	r.render(ctx, w, code, data)
 }
+
+// SendNoContent sends to the client an empty response with the 204 (NOCONTENT) status
+func (r *Service) SendNoContent(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusNoContent)
+}

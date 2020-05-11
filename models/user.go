@@ -40,15 +40,6 @@ type User struct {
 	Credentials
 }
 
-// assignement task, status task, newuser, vacation-approve
-type RecentChanges struct {
-	ID         uuid.UUID
-	UsedID     uuid.UUID
-	OwnerID    uuid.UUID
-	IncidentID uuid.UUID
-	Type       string
-}
-
 type UserUpdate struct {
 	ID          string `json:"id"`
 	MobilePhone string `json:"mobilePhone,omitempty"`

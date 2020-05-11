@@ -9,14 +9,18 @@ import (
 	"github.com/Dimitriy14/staff-manager/db"
 	"github.com/Dimitriy14/staff-manager/elasticsearch"
 	"github.com/Dimitriy14/staff-manager/logger"
+	"github.com/Dimitriy14/staff-manager/repository/recent-action"
+	tasksRepo "github.com/Dimitriy14/staff-manager/repository/tasks"
 	"github.com/Dimitriy14/staff-manager/repository/user"
 	authUsecase "github.com/Dimitriy14/staff-manager/usecases/auth"
 	"github.com/Dimitriy14/staff-manager/usecases/photos"
+	tasksuc "github.com/Dimitriy14/staff-manager/usecases/tasks"
 	"github.com/Dimitriy14/staff-manager/web"
 	"github.com/Dimitriy14/staff-manager/web/middlewares"
 	"github.com/Dimitriy14/staff-manager/web/services/auth"
 	"github.com/Dimitriy14/staff-manager/web/services/health"
 	"github.com/Dimitriy14/staff-manager/web/services/rest"
+	"github.com/Dimitriy14/staff-manager/web/services/tasks"
 	userServ "github.com/Dimitriy14/staff-manager/web/services/user"
 
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -71,6 +75,10 @@ func LoadApplication(cfgFile string, signal chan os.Signal) (c Components, err e
 	a := auth.NewAuthService(authUsecase.NewAuthUsecase(c.Cognito, l), restService, userRepo, l)
 	photo := photos.NewPhotosUploader(awservices.GetS3Manager(sess, cfg.AWSRegion), cfg.StorageURL, cfg.BucketName)
 	uServ := userServ.NewUserService(restService, l, userRepo, authuc, photo)
+
+	recentActionRepo := recent.NewRecentActionRepo(pg)
+	taskRepository := tasksRepo.NewRepository(es)
+	taskuc := tasksuc.NewTaskUsecase(taskRepository, userRepo, recentActionRepo)
 	router := web.NewRouter(
 		c.Configuration.URLPrefix,
 		c.Configuration.OriginHosts,
@@ -83,6 +91,7 @@ func LoadApplication(cfgFile string, signal chan os.Signal) (c Components, err e
 			TxIDMiddleware: middlewares.AddIDRequestMiddleware,
 			AuthMiddleware: middlewares.AuthMiddleware(l, authuc, restService),
 			AdminOnly:      middlewares.AdminRestriction(l, restService),
+			Task:           tasks.NewTaskService(taskuc, restService, l),
 		})
 	server := web.NewServer(cfg.ListenURL, router, l, signal)
 	server.Start()

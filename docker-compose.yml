@@ -11,7 +11,7 @@ services:
     ports:
       - "5431:5432"
   es:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.8
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
     container_name: es
     environment:
       - discovery.type=single-node
