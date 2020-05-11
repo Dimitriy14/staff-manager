@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Dimitriy14/staff-manager/web/services/tasks"
+
 	"github.com/rs/cors"
 	"github.com/urfave/negroni"
 
@@ -24,6 +26,7 @@ type Services struct {
 	Rest           *rest.Service
 	Auth           auth.Service
 	User           user.Service
+	Task           tasks.Service
 	LogMiddleware  mux.MiddlewareFunc
 	TxIDMiddleware mux.MiddlewareFunc
 	AuthMiddleware mux.MiddlewareFunc
@@ -54,6 +57,13 @@ func NewRouter(pathPrefix string, originHosts []string, s Services) *mux.Router 
 	adminOnly := authorisation.Name("admin").Subrouter()
 	adminOnly.Use(s.AdminOnly)
 	adminOnly.Path(fmt.Sprintf("/user/{id:%s}", UUIDPattern)).HandlerFunc(s.User.AdminUserUpdate).Methods(http.MethodPut)
+
+	authorisation.Path("/task").HandlerFunc(s.Task.GetUserTasks).Methods(http.MethodGet)
+	authorisation.Path("/task").HandlerFunc(s.Task.SaveTask).Methods(http.MethodPost)
+	authorisation.Path(fmt.Sprintf("/task/{id:%s}", UUIDPattern)).HandlerFunc(s.Task.Update).Methods(http.MethodPut)
+	authorisation.Path("/task/list").HandlerFunc(s.Task.GetTasks).Methods(http.MethodGet)
+	authorisation.Path(fmt.Sprintf("/task/{id:%s}", UUIDPattern)).HandlerFunc(s.Task.GetTaskByID).Methods(http.MethodGet)
+	authorisation.Path(fmt.Sprintf("/task/{id:%s}", UUIDPattern)).HandlerFunc(s.Task.DeleteTask).Methods(http.MethodDelete)
 
 	var corsRouter = mux.NewRouter()
 	{

@@ -6,29 +6,41 @@ import (
 	"github.com/google/uuid"
 )
 
-type Statuses string
+type statuses string
 
 const (
-	Ready      Statuses = "Ready"
-	InProgress Statuses = "InProgress"
-	Done       Statuses = "Done"
-	Blocked    Statuses = "Blocked"
+	Ready      statuses = "Ready"
+	InProgress statuses = "InProgress"
+	Done       statuses = "Done"
+	Blocked    statuses = "Blocked"
 )
 
 type Task struct {
 	ID          uuid.UUID `json:"id"`
+	Number      string    `json:"number"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
-	CreatedBy   User      `json:"createdBy"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedBy   User      `json:"updatedBy"`
+	CreatedBy   *User     `json:"createdBy,omitempty"`
+	UpdatedBy   *User     `json:"updatedBy,omitempty"`
+	Assigned    *User     `json:"assigned,omitempty"`
 	UpdatedAt   time.Time `json:"updatedAt"`
-	Assigned    User      `json:"assigned"`
-	Status      string    `json:"status"`
+	CreatedAt   time.Time `json:"createdAt"`
+	Status      statuses  `json:"status"`
 }
 
-//
-// tasks  -get my tasks; post - create new one; put
-// tasks/all - all tasks
-// tasks/{id} - get
-// search task by number and title
+type TaskElastic struct {
+	ID          uuid.UUID `json:"id"`
+	Number      string    `json:"number"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	AssignedID  string    `json:"assignedID"`
+	CreatedByID string    `json:"createdByID"`
+	UpdatedByID string    `json:"updatedByID"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+	CreatedAt   time.Time `json:"createdAt"`
+	Status      statuses  `json:"status"`
+}
+
+func (t TaskElastic) IsAssigned() bool {
+	return t.AssignedID != ""
+}
