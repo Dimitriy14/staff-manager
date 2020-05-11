@@ -2,7 +2,7 @@ swagger: "2.0"
 
 info:
   version: 1.0.0
-  title: Agent Configuration MS API
+  title: Staff app API
 schemes:
   - http
 basePath: /staff
@@ -289,6 +289,149 @@ paths:
             $ref: '#/definitions/common.Error'
       summary: Upload user photo
 
+  /task:
+    get:
+      tags:
+        - Authorised
+      consumes:
+        - application/json
+      description: Retrieves all tasks for authorised user
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.TaskResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Retrieves all tasks for authorised user
+    post:
+      tags:
+        - Authorised
+      consumes:
+        - application/json
+      description: Create new task
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: user
+          schema:
+            $ref: '#/definitions/models.TaskRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TaskResponse'
+        "404":
+          description: Assigned user not found
+          schema:
+            $ref: '#/definitions/common.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Create new task
+
+  /task/{id}:
+    get:
+      tags:
+        - Authorised
+      consumes:
+        - application/json
+      description: Retrieves task by id
+      parameters:
+        - $ref: '#/parameters/ObjectID'
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TaskResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/common.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Retrieves task by id
+    put:
+      tags:
+        - Authorised
+      consumes:
+        - application/json
+      description: Update task
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/ObjectID'
+        - in: body
+          name: user
+          schema:
+            $ref: '#/definitions/models.TaskUpdateRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TaskResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/common.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Update task
+    delete:
+      tags:
+        - Authorised
+      consumes:
+        - application/json
+      description: Updates task
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/ObjectID'
+      responses:
+        "204":
+          description: OK
+      summary: Delete task
+
+  /task/list:
+    get:
+      tags:
+        - Authorised
+      consumes:
+        - application/json
+      description: Retrieves all tasks with limit
+      parameters:
+        - in: query
+          name: amountTasks
+          type: integer
+          description: The number of items to skip before starting to collect the result set
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.TaskResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Retrieves all tasks with limit
 
 definitions:
 
@@ -407,6 +550,59 @@ definitions:
               type: array
               items:
                 type: string
+
+  models.TaskRequest:
+    properties:
+      title:
+        type: string
+      description:
+        type: string
+      assignedID:
+        type: string
+        format: uuid
+
+  models.TaskUpdateRequest:
+    properties:
+      title:
+        type: string
+      description:
+        type: string
+      assignedID:
+        type: string
+        format: uuid
+      status:
+        type: string
+        enum: ["Ready", "InProgress", "Done", "Blocked"]
+
+  models.TaskResponse:
+    properties:
+      id:
+        type: string
+        format: uuid
+      number:
+        type: string
+      title:
+        type: string
+      description:
+        type: string
+      createdBy:
+        type: object
+        $ref: '#/definitions/models.UserResponse'
+      updatedBy:
+        type: object
+        $ref: '#/definitions/models.UserResponse'
+      assigned:
+        type: object
+        $ref: '#/definitions/models.UserResponse'
+      updatedAt:
+        type: string
+        format: time
+      createdAt:
+        type: string
+        format: time
+      status:
+        type: string
+        enum: ["Ready", "InProgress", "Done", "Blocked"]
 
 
 parameters:
