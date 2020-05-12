@@ -196,19 +196,19 @@ func (u *taskUsecase) joinTaskWithUsers(ctx context.Context, task models.TaskEla
 	if task.IsAssigned() {
 		au, err := u.userRepo.GetUserByID(ctx, task.AssignedID)
 		if err != nil {
-			return models.Task{}, models.NewErrNotFound("assigned user with id=%s is not found", task.AssignedID)
+			return models.Task{}, models.NewErrNotFound("assigned user with id=%s is not found: err=%s", task.AssignedID, err)
 		}
 		assignedUser = &au
 	}
 
 	creatorUser, err := u.userRepo.GetUserByID(ctx, task.CreatedByID)
 	if err != nil {
-		return models.Task{}, models.NewErrNotFound("creator user with id=%s is not found", task.CreatedByID)
+		return models.Task{}, models.NewErrNotFound("creator user with id=%s is not found: err=%s", task.CreatedByID, err)
 	}
 
 	updaterUser, err := u.userRepo.GetUserByID(ctx, task.UpdatedByID)
 	if err != nil {
-		return models.Task{}, models.NewErrNotFound("updater user with id=%s is not found", task.UpdatedByID)
+		return models.Task{}, models.NewErrNotFound("updater user with id=%s is not found: %s", task.UpdatedByID, err)
 	}
 
 	t := copyToTask(task)
