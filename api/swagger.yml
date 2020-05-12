@@ -415,9 +415,14 @@ paths:
       description: Retrieves all tasks with limit
       parameters:
         - in: query
-          name: amountTasks
+          name: from
           type: integer
-          description: The number of items to skip before starting to collect the result set
+          description: Task index
+        - in: query
+          name: size
+          type: integer
+          description: Amount of tasks to retrieve
+
       produces:
         - application/json
       responses:
@@ -522,8 +527,6 @@ definitions:
       position:
         type: string
         description: "Should be provided full word (optional)"
-
-
 
   models.Health:
     properties:

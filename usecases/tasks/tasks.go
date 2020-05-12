@@ -15,7 +15,7 @@ import (
 type TaskUsecase interface {
 	GetUserTasks(ctx context.Context, userID string) ([]models.Task, error)
 	SaveTask(ctx context.Context, task models.TaskElastic) (models.Task, error)
-	GetTasks(ctx context.Context, amount int) ([]models.Task, error)
+	GetTasks(ctx context.Context, from, size int) ([]models.Task, error)
 	GetTaskByID(ctx context.Context, id uuid.UUID) (models.Task, error)
 	Search(ctx context.Context, search string) ([]models.TaskElastic, error)
 	Update(ctx context.Context, task models.TaskElastic) (models.Task, error)
@@ -100,8 +100,8 @@ func (u *taskUsecase) GetUserTasks(ctx context.Context, userID string) ([]models
 	return u.joinTasks(ctx, tasks...)
 }
 
-func (u *taskUsecase) GetTasks(ctx context.Context, number int) ([]models.Task, error) {
-	tasks, err := u.TaskRepository.GetTasks(ctx, number)
+func (u *taskUsecase) GetTasks(ctx context.Context, from, size int) ([]models.Task, error) {
+	tasks, err := u.TaskRepository.GetTasks(ctx, from, size)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot retrieve tasks")
 	}

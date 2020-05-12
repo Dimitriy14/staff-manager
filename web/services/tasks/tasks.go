@@ -18,7 +18,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const amountTasks = "amountTasks"
+const (
+	from = "from"
+	size = "size"
+)
 
 func NewTaskService(taskuc tasks.TaskUsecase, r *rest.Service, log logger.Logger) *taskService {
 	return &taskService{
@@ -105,26 +108,34 @@ func (ts *taskService) SaveTask(w http.ResponseWriter, r *http.Request) {
 
 func (ts *taskService) GetTasks(w http.ResponseWriter, r *http.Request) {
 	var (
-		ctx         = r.Context()
-		txID        = transactionID.FromContext(ctx)
-		ua          = util.GetUserAccessFromCtx(ctx)
-		tasksNumber = r.URL.Query()[amountTasks]
+		ctx   = r.Context()
+		txID  = transactionID.FromContext(ctx)
+		ua    = util.GetUserAccessFromCtx(ctx)
+		start = r.URL.Query()[from]
+		end   = r.URL.Query()[size]
 	)
 
-	if len(tasksNumber) < 1 {
+	if len(start) < 1 || len(end) < 1 {
 		ts.log.Warnf(txID, "amountTasks is missing")
 		ts.r.SendBadRequest(ctx, w, "amountTasks is missing")
 		return
 	}
 
-	amount, err := strconv.ParseUint(tasksNumber[0], 10, 64)
+	startFrom, err := strconv.ParseUint(start[0], 10, 64)
 	if err != nil {
-		ts.log.Warnf(txID, "cannot parse amountTasks number: %s", err)
-		ts.r.SendBadRequest(ctx, w, "cannot parse amountTasks number: %s", err)
+		ts.log.Warnf(txID, "cannot parse \"from\" number: %s", err)
+		ts.r.SendBadRequest(ctx, w, "cannot parse \"from\" number: %s", err)
 		return
 	}
 
-	t, err := ts.taskuc.GetTasks(ctx, int(amount))
+	size, err := strconv.ParseUint(end[0], 10, 64)
+	if err != nil {
+		ts.log.Warnf(txID, "cannot parse \"size\" number: %s", err)
+		ts.r.SendBadRequest(ctx, w, "cannot parse \"size\" number: %s", err)
+		return
+	}
+
+	t, err := ts.taskuc.GetTasks(ctx, int(startFrom), int(size))
 	if err != nil {
 		ts.log.Warnf(txID, "GetTasks userID=%s failed due to err=%s", ua.UserID, err)
 		ts.r.SendInternalServerError(ctx, w, "tasks retrieving failed")

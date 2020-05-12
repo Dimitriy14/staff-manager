@@ -21,7 +21,7 @@ type RecentActionRepository interface {
 type TaskRepository interface {
 	GetUserTasks(ctx context.Context, userID string) ([]models.TaskElastic, error)
 	SaveTask(ctx context.Context, task models.TaskElastic) error
-	GetTasks(ctx context.Context, amount int) ([]models.TaskElastic, error)
+	GetTasks(ctx context.Context, from, size int) ([]models.TaskElastic, error)
 	GetTaskByID(ctx context.Context, id string) (models.TaskElastic, error)
 	CountTasks(ctx context.Context) (int64, error)
 	Search(ctx context.Context, search string) ([]models.TaskElastic, error)
