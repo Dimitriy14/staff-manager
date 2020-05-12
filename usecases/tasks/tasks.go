@@ -55,6 +55,7 @@ func (u *taskUsecase) SaveTask(ctx context.Context, task models.TaskElastic) (mo
 		return models.Task{}, errors.Wrap(err, "cannot count tasks")
 	}
 	task.Number = fmt.Sprintf("%d", count)
+	task.Status = models.Ready
 
 	t := copyToTask(task)
 
