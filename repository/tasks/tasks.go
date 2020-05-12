@@ -57,11 +57,11 @@ func (r *tasksRepo) SaveTask(ctx context.Context, task models.TaskElastic) error
 	return err
 }
 
-func (r *tasksRepo) GetTasks(ctx context.Context, amount int) ([]models.TaskElastic, error) {
+func (r *tasksRepo) GetTasks(ctx context.Context, from, size int) ([]models.TaskElastic, error) {
 	q := elastic.NewMatchAllQuery()
 	resp, err := r.es.ESClient.Search(taskIndex).
-		From(0).
-		Size(amount).
+		From(from).
+		Size(size).
 		Query(q).
 		Do(ctx)
 
