@@ -34,7 +34,7 @@ func NewTaskUsecase(
 }
 
 const (
-	numOfWorker = 3
+	numOfWorker = 2
 )
 
 type taskUsecase struct {
