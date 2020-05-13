@@ -12,6 +12,7 @@ const (
 	Assignment       ChangesType = "Assignment"
 	TaskStatusChange ChangesType = "TaskStatusChange"
 	VacationApprove  ChangesType = "VacationApprove"
+	VacationRequest  ChangesType = "VacationRequest"
 )
 
 // Assignment task, status task, vacation-approve

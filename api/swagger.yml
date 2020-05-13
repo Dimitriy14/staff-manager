@@ -422,7 +422,6 @@ paths:
           name: size
           type: integer
           description: Amount of tasks to retrieve
-
       produces:
         - application/json
       responses:
@@ -437,6 +436,27 @@ paths:
           schema:
             $ref: '#/definitions/common.Error'
       summary: Retrieves all tasks with limit
+
+  /recent:
+    get:
+      tags:
+        - Authorised
+      produces:
+        - application/json
+      description: Retrieves all recent changes for current user
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.RecentChanges'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Retrieves all recent changes for current user
+
 
 definitions:
 
@@ -606,6 +626,30 @@ definitions:
       status:
         type: string
         enum: ["Ready", "InProgress", "Done", "Blocked"]
+
+  models.RecentChanges:
+    properties:
+      id:
+        type: string
+        format: uuid
+      userID:
+        type: string
+        format: uuid
+        description: Assigned userID
+      ownerID:
+        type: string
+        format: uuid
+        description: task creator or vacation requester
+      incidentID:
+        type: string
+        format: uuid
+        description: In case of task changes it`s taskID, In case of vacation it`s vacationID
+      type:
+        type: string
+        enum: ["Assignment", "TaskStatusChange", "VacationApprove", "VacationRequest"]
+      changeTime:
+        type: string
+        format: time
 
 
 parameters:
