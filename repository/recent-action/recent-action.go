@@ -25,7 +25,7 @@ func (r *recentActionRepo) Save(action models.RecentChanges) error {
 
 func (r *recentActionRepo) GetUserChanges(userID string) ([]models.RecentChanges, error) {
 	actions := make([]models.RecentChanges, 0, 0)
-	errs := r.Session.Where("UserID = ? OR OwnerID = ?", userID, userID).Order("ChangeTime desc").Find(&actions).GetErrors()
+	errs := r.Session.Where("user_id = ? OR owner_id = ?", userID, userID).Order("change_time desc").Find(&actions).GetErrors()
 	if len(errs) > 1 {
 		return nil, errors.Wrap(concatErrors(errs...), "getting action error")
 	}

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	recent_changes "github.com/Dimitriy14/staff-manager/web/services/recent-changes"
+
 	"github.com/Dimitriy14/staff-manager/web/services/tasks"
 
 	"github.com/rs/cors"
@@ -27,6 +29,7 @@ type Services struct {
 	Auth           auth.Service
 	User           user.Service
 	Task           tasks.Service
+	RecentChanges  recent_changes.Service
 	LogMiddleware  mux.MiddlewareFunc
 	TxIDMiddleware mux.MiddlewareFunc
 	AuthMiddleware mux.MiddlewareFunc
@@ -65,6 +68,7 @@ func NewRouter(pathPrefix string, originHosts []string, s Services) *mux.Router 
 	authorisation.Path(fmt.Sprintf("/task/{id:%s}", UUIDPattern)).HandlerFunc(s.Task.GetTaskByID).Methods(http.MethodGet)
 	authorisation.Path(fmt.Sprintf("/task/{id:%s}", UUIDPattern)).HandlerFunc(s.Task.DeleteTask).Methods(http.MethodDelete)
 
+	authorisation.Path("/recent").HandlerFunc(s.RecentChanges.GetRecentChanges).Methods(http.MethodGet)
 	var corsRouter = mux.NewRouter()
 	{
 		corsRouter.PathPrefix(pathPrefix).Handler(negroni.New(

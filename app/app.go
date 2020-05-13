@@ -19,6 +19,7 @@ import (
 	"github.com/Dimitriy14/staff-manager/web/middlewares"
 	"github.com/Dimitriy14/staff-manager/web/services/auth"
 	"github.com/Dimitriy14/staff-manager/web/services/health"
+	recent_changes "github.com/Dimitriy14/staff-manager/web/services/recent-changes"
 	"github.com/Dimitriy14/staff-manager/web/services/rest"
 	"github.com/Dimitriy14/staff-manager/web/services/tasks"
 	userServ "github.com/Dimitriy14/staff-manager/web/services/user"
@@ -92,6 +93,7 @@ func LoadApplication(cfgFile string, signal chan os.Signal) (c Components, err e
 			AuthMiddleware: middlewares.AuthMiddleware(l, authuc, restService),
 			AdminOnly:      middlewares.AdminRestriction(l, restService),
 			Task:           tasks.NewTaskService(taskuc, restService, l),
+			RecentChanges:  recent_changes.NewService(recentActionRepo, restService, l),
 		})
 	server := web.NewServer(cfg.ListenURL, router, l, signal)
 	server.Start()

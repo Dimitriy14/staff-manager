@@ -135,6 +135,20 @@ func (u *taskUsecase) Update(ctx context.Context, task models.TaskElastic) (mode
 		}
 	}
 
+	if oldTask.Status != task.Status {
+		err = u.recentChangesRepo.Save(models.RecentChanges{
+			ID:         uuid.New(),
+			UserID:     task.AssignedID,
+			OwnerID:    task.CreatedByID,
+			IncidentID: task.ID,
+			Type:       models.TaskStatusChange,
+			ChangeTime: time.Now(),
+		})
+		if err != nil {
+			return models.Task{}, err
+		}
+	}
+
 	t, err := u.joinTaskWithUsers(ctx, task)
 	if err != nil {
 		return models.Task{}, err
