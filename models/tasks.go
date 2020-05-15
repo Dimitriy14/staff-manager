@@ -17,7 +17,7 @@ const (
 
 type Task struct {
 	ID          uuid.UUID `json:"id"`
-	Number      string    `json:"number"`
+	Number      uint64    `json:"number"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	CreatedBy   *User     `json:"createdBy,omitempty"`
@@ -30,7 +30,7 @@ type Task struct {
 
 type TaskElastic struct {
 	ID          uuid.UUID `json:"id"`
-	Number      string    `json:"number"`
+	Number      uint64    `json:"number"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	AssignedID  string    `json:"assignedID"`

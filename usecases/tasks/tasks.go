@@ -2,7 +2,6 @@ package tasks
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/Dimitriy14/staff-manager/models"
@@ -50,11 +49,11 @@ func (u *taskUsecase) SaveTask(ctx context.Context, task models.TaskElastic) (mo
 		return models.Task{}, models.NewErrNotFound("creator user with id=%s is not found", task.CreatedByID)
 	}
 
-	count, err := u.CountTasks(ctx)
+	count, err := u.GetNextTaskIndex(ctx)
 	if err != nil {
 		return models.Task{}, errors.Wrap(err, "cannot count tasks")
 	}
-	task.Number = fmt.Sprintf("%d", count)
+	task.Number = uint64(count)
 	task.Status = models.Ready
 
 	t := copyToTask(task)
