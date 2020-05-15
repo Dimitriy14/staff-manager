@@ -17,6 +17,8 @@ const (
 	taskType  = "task"
 
 	assignedAttribute = "assignedID"
+
+	number = "number"
 )
 
 func NewRepository(es *elasticsearch.Client) *tasksRepo {
@@ -94,8 +96,26 @@ func (r *tasksRepo) GetTaskByID(ctx context.Context, id string) (models.TaskElas
 	return t, err
 }
 
-func (r *tasksRepo) CountTasks(ctx context.Context) (int64, error) {
-	return r.es.ESClient.Count(taskIndex).Do(ctx)
+func (r *tasksRepo) GetNextTaskIndex(ctx context.Context) (int64, error) {
+	agg := elastic.NewMaxAggregation().Field(number)
+	resp, err := r.es.ESClient.Search().
+		Index(taskIndex).
+		Aggregation(number, agg).
+		Do(ctx)
+
+	if err != nil {
+		if elastic.IsNotFound(err) {
+			return 0, nil
+		}
+		return 0, err
+	}
+
+	max, found := resp.Aggregations.Max(number)
+	if !found {
+		return 0, errors.New("cannot found number")
+	}
+
+	return int64(*max.Value) + 1, nil
 }
 
 func (r *tasksRepo) Search(ctx context.Context, search string) ([]models.TaskElastic, error) {
