@@ -61,7 +61,7 @@ func NewRouter(pathPrefix string, originHosts []string, s Services) *mux.Router 
 	adminOnly.Use(s.AdminOnly)
 	adminOnly.Path(fmt.Sprintf("/user/{id:%s}", UUIDPattern)).HandlerFunc(s.User.AdminUserUpdate).Methods(http.MethodPut)
 
-	authorisation.Path("/task").HandlerFunc(s.Task.GetUserTasks).Methods(http.MethodGet)
+	authorisation.Path("/task").HandlerFunc(s.Task.GetMyTasks).Methods(http.MethodGet)
 	authorisation.Path("/task").HandlerFunc(s.Task.SaveTask).Methods(http.MethodPost)
 	authorisation.Path("/task/search").HandlerFunc(s.Task.SearchForUser).Methods(http.MethodPost)
 	authorisation.Path("/task/search/all").HandlerFunc(s.Task.Search).Methods(http.MethodPost)
@@ -69,6 +69,7 @@ func NewRouter(pathPrefix string, originHosts []string, s Services) *mux.Router 
 	authorisation.Path("/task/list").HandlerFunc(s.Task.GetTasks).Methods(http.MethodGet)
 	authorisation.Path(fmt.Sprintf("/task/{id:%s}", UUIDPattern)).HandlerFunc(s.Task.GetTaskByID).Methods(http.MethodGet)
 	authorisation.Path(fmt.Sprintf("/task/{id:%s}", UUIDPattern)).HandlerFunc(s.Task.DeleteTask).Methods(http.MethodDelete)
+	authorisation.Path(fmt.Sprintf("/task/user/{id:%s}", UUIDPattern)).HandlerFunc(s.Task.GetUserTasks).Methods(http.MethodGet)
 
 	authorisation.Path("/recent").HandlerFunc(s.RecentChanges.GetRecentChanges).Methods(http.MethodGet)
 	var corsRouter = mux.NewRouter()

@@ -40,6 +40,7 @@ type taskService struct {
 
 type Service interface {
 	GetUserTasks(w http.ResponseWriter, r *http.Request)
+	GetMyTasks(w http.ResponseWriter, r *http.Request)
 	SaveTask(w http.ResponseWriter, r *http.Request)
 	GetTasks(w http.ResponseWriter, r *http.Request)
 	GetTaskByID(w http.ResponseWriter, r *http.Request)
@@ -53,12 +54,36 @@ func (ts *taskService) GetUserTasks(w http.ResponseWriter, r *http.Request) {
 	var (
 		ctx  = r.Context()
 		txID = transactionID.FromContext(ctx)
+		id   = mux.Vars(r)["id"]
+	)
+
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		ts.log.Warnf(txID, "invalid user id: err=%s", err)
+		ts.r.SendBadRequest(ctx, w, "invalid user id: err=%s", err)
+		return
+	}
+
+	t, err := ts.taskuc.GetUserTasks(ctx, uid.String())
+	if err != nil {
+		ts.log.Warnf(txID, "GetUserTasks userID=%s failed due to err=%s", id, err)
+		ts.r.SendInternalServerError(ctx, w, "user tasks retrieving failed")
+		return
+	}
+
+	ts.r.RenderJSON(ctx, w, t)
+}
+
+func (ts *taskService) GetMyTasks(w http.ResponseWriter, r *http.Request) {
+	var (
+		ctx  = r.Context()
+		txID = transactionID.FromContext(ctx)
 		ua   = util.GetUserAccessFromCtx(ctx)
 	)
 
 	t, err := ts.taskuc.GetUserTasks(ctx, ua.UserID)
 	if err != nil {
-		ts.log.Warnf(txID, "GetUserTasks userID=%s failed due to err=%s", ua.UserID, err)
+		ts.log.Warnf(txID, "GetMyTasks userID=%s failed due to err=%s", ua.UserID, err)
 		ts.r.SendInternalServerError(ctx, w, "user tasks retrieving failed")
 		return
 	}
