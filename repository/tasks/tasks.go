@@ -110,6 +110,10 @@ func (r *tasksRepo) GetNextTaskIndex(ctx context.Context) (int64, error) {
 		return 0, err
 	}
 
+	if resp.TotalHits() == 0 {
+		return 0, nil
+	}
+
 	max, found := resp.Aggregations.Max(number)
 	if !found {
 		return 0, errors.New("cannot found number")
