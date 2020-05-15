@@ -374,7 +374,7 @@ paths:
       parameters:
         - $ref: '#/parameters/ObjectID'
         - in: body
-          name: user
+          name: task
           schema:
             $ref: '#/definitions/models.TaskUpdateRequest'
       responses:
@@ -436,6 +436,85 @@ paths:
           schema:
             $ref: '#/definitions/common.Error'
       summary: Retrieves all tasks with limit
+
+  /task/search:
+    post:
+      tags:
+        - Authorised
+      consumes:
+        - application/json
+      description: Search in my tasks
+      parameters:
+        - in: body
+          name: task search
+          schema:
+            $ref: '#/definitions/models.TaskSearch'
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.TaskElastic'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Search in my tasks
+
+  /task/search/all:
+    post:
+      tags:
+        - Authorised
+      consumes:
+        - application/json
+      description: Search in all tasks
+      parameters:
+        - in: body
+          name: task search
+          schema:
+            $ref: '#/definitions/models.TaskSearch'
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.TaskElastic'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Search in all tasks
+
+  /task/user/{id}:
+    get:
+      tags:
+        - Authorised
+      consumes:
+        - application/json
+      description: Retrieves all tasks for user by id
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/ObjectID'
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.TaskResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Retrieves all tasks for user by id
+
 
   /recent:
     get:
@@ -650,6 +729,40 @@ definitions:
       changeTime:
         type: string
         format: time
+
+  models.TaskSearch:
+    properties:
+      search:
+        type: string
+
+  models.TaskElastic:
+    properties:
+      id:
+        type: string
+        format: uuid
+      title:
+        type: string
+      description:
+        type: string
+      assignedID:
+        type: string
+        format: uuid
+      createdByID:
+        type: string
+        format: uuid
+      updatedByID:
+        type: string
+        format: uuid
+      updatedAt:
+        type: string
+        format: time
+      createdAt:
+        type: string
+        format: time
+      status:
+        type: string
+        enum: ["Ready", "InProgress", "Done", "Blocked"]
+
 
 
 parameters:
