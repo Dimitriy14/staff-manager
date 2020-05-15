@@ -44,6 +44,7 @@ type Service interface {
 	GetTasks(w http.ResponseWriter, r *http.Request)
 	GetTaskByID(w http.ResponseWriter, r *http.Request)
 	Search(w http.ResponseWriter, r *http.Request)
+	SearchForUser(w http.ResponseWriter, r *http.Request)
 	Update(w http.ResponseWriter, r *http.Request)
 	DeleteTask(w http.ResponseWriter, r *http.Request)
 }
@@ -169,8 +170,68 @@ func (ts *taskService) GetTaskByID(w http.ResponseWriter, r *http.Request) {
 	ts.r.RenderJSON(ctx, w, task)
 }
 
-//TODO: implement
-func (ts *taskService) Search(w http.ResponseWriter, r *http.Request) {}
+func (ts *taskService) Search(w http.ResponseWriter, r *http.Request) {
+	var (
+		ctx  = r.Context()
+		txID = transactionID.FromContext(ctx)
+		s    models.TaskSearch
+	)
+
+	body, err := util.RetrieveAndValidate(schemas.TaskSearch, ts.log, r)
+	if err != nil {
+		ts.log.Warnf(txID, "cannot parse task search: %s", err)
+		ts.r.SendBadRequest(ctx, w, "cannot parse task search: %s", err)
+		return
+	}
+
+	err = json.Unmarshal(body, &s)
+	if err != nil {
+		ts.log.Warnf(txID, "cannot parse task search: %s", err)
+		ts.r.SendBadRequest(ctx, w, "cannot parse task search: %s", err)
+		return
+	}
+
+	t, err := ts.taskuc.Search(ctx, s.Search)
+	if err != nil {
+		ts.log.Warnf(txID, "Search failed due to err=%s", err)
+		ts.r.SendInternalServerError(ctx, w, "tasks search failed")
+		return
+	}
+
+	ts.r.RenderJSON(ctx, w, t)
+}
+
+func (ts *taskService) SearchForUser(w http.ResponseWriter, r *http.Request) {
+	var (
+		ctx  = r.Context()
+		txID = transactionID.FromContext(ctx)
+		ua   = util.GetUserAccessFromCtx(ctx)
+		s    models.TaskSearch
+	)
+
+	body, err := util.RetrieveAndValidate(schemas.TaskSearch, ts.log, r)
+	if err != nil {
+		ts.log.Warnf(txID, "cannot parse task search: %s", err)
+		ts.r.SendBadRequest(ctx, w, "cannot parse task search: %s", err)
+		return
+	}
+
+	err = json.Unmarshal(body, &s)
+	if err != nil {
+		ts.log.Warnf(txID, "cannot parse task search: %s", err)
+		ts.r.SendBadRequest(ctx, w, "cannot parse task search: %s", err)
+		return
+	}
+
+	t, err := ts.taskuc.SearchForUser(ctx, s.Search, ua.UserID)
+	if err != nil {
+		ts.log.Warnf(txID, "Search failed due to err=%s", err)
+		ts.r.SendInternalServerError(ctx, w, "tasks search failed")
+		return
+	}
+
+	ts.r.RenderJSON(ctx, w, t)
+}
 
 func (ts *taskService) Update(w http.ResponseWriter, r *http.Request) {
 	var (

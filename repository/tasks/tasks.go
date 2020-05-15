@@ -123,7 +123,41 @@ func (r *tasksRepo) GetNextTaskIndex(ctx context.Context) (int64, error) {
 }
 
 func (r *tasksRepo) Search(ctx context.Context, search string) ([]models.TaskElastic, error) {
-	return nil, nil
+	q := elastic.NewQueryStringQuery(search + "*").Fuzziness("AUTO")
+	resp, err := r.es.ESClient.Search(taskIndex).
+		Query(q).
+		Do(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := make([]models.TaskElastic, 0, resp.TotalHits())
+	for _, u := range resp.Each(reflect.TypeOf(models.TaskElastic{})) {
+		if task, ok := u.(models.TaskElastic); ok {
+			tasks = append(tasks, task)
+		}
+	}
+	return tasks, nil
+}
+
+func (r *tasksRepo) SearchForUser(ctx context.Context, search, userID string) ([]models.TaskElastic, error) {
+	q := elastic.NewQueryStringQuery(search + "*").Fuzziness("AUTO")
+	user := elastic.NewMatchQuery(assignedAttribute, userID)
+	resp, err := r.es.ESClient.Search(taskIndex).
+		PostFilter(user).
+		Query(q).
+		Do(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := make([]models.TaskElastic, 0, resp.TotalHits())
+	for _, u := range resp.Each(reflect.TypeOf(models.TaskElastic{})) {
+		if task, ok := u.(models.TaskElastic); ok {
+			tasks = append(tasks, task)
+		}
+	}
+	return tasks, nil
 }
 
 func (r *tasksRepo) UpdateTask(ctx context.Context, task models.TaskElastic) error {

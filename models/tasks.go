@@ -44,3 +44,7 @@ type TaskElastic struct {
 func (t TaskElastic) IsAssigned() bool {
 	return t.AssignedID != ""
 }
+
+type TaskSearch struct {
+	Search string `json:"search"`
+}

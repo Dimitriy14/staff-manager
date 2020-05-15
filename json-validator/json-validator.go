@@ -18,6 +18,7 @@ var (
 		schemas.AdminUserUpdate:  schemas.AdminUserUpdateSchema,
 		schemas.TaskCreation:     schemas.TaskCreationSchema,
 		schemas.TaskUpdate:       schemas.TaskUpdateSchema,
+		schemas.TaskSearch:       schemas.TaskSearchSchema,
 	}
 
 	schemasMap = map[string]*gojsonschema.Schema{}

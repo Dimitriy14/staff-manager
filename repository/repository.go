@@ -25,6 +25,7 @@ type TaskRepository interface {
 	GetTaskByID(ctx context.Context, id string) (models.TaskElastic, error)
 	GetNextTaskIndex(ctx context.Context) (int64, error)
 	Search(ctx context.Context, search string) ([]models.TaskElastic, error)
+	SearchForUser(ctx context.Context, search, userID string) ([]models.TaskElastic, error)
 	UpdateTask(ctx context.Context, task models.TaskElastic) error
 	DeleteTask(ctx context.Context, id string) error
 }

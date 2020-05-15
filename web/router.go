@@ -63,6 +63,8 @@ func NewRouter(pathPrefix string, originHosts []string, s Services) *mux.Router 
 
 	authorisation.Path("/task").HandlerFunc(s.Task.GetUserTasks).Methods(http.MethodGet)
 	authorisation.Path("/task").HandlerFunc(s.Task.SaveTask).Methods(http.MethodPost)
+	authorisation.Path("/task/search").HandlerFunc(s.Task.SearchForUser).Methods(http.MethodPost)
+	authorisation.Path("/task/search/all").HandlerFunc(s.Task.Search).Methods(http.MethodPost)
 	authorisation.Path(fmt.Sprintf("/task/{id:%s}", UUIDPattern)).HandlerFunc(s.Task.Update).Methods(http.MethodPut)
 	authorisation.Path("/task/list").HandlerFunc(s.Task.GetTasks).Methods(http.MethodGet)
 	authorisation.Path(fmt.Sprintf("/task/{id:%s}", UUIDPattern)).HandlerFunc(s.Task.GetTaskByID).Methods(http.MethodGet)
