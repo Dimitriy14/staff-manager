@@ -45,6 +45,7 @@ type UserUpdate struct {
 	MobilePhone string `json:"mobilePhone,omitempty"`
 	DateOfBirth string `json:"dateOfBirth,omitempty"`
 	ImageURL    string `json:"imageURL,omitempty"`
+	Mood        string `json:"mood,omitempty"`
 }
 
 type UserAccess struct {

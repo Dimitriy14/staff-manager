@@ -31,7 +31,10 @@ type repo struct {
 }
 
 func (r *repo) GetUserByID(ctx context.Context, id string) (models.User, error) {
-	resp, err := r.es.ESClient.Get().Index(elasticIndex).Type(userType).Id(id).Do(ctx)
+	resp, err := r.es.ESClient.Get().
+		Index(elasticIndex).
+		Id(id).
+		Do(ctx)
 	if err != nil {
 		return models.User{}, err
 	}
@@ -44,7 +47,6 @@ func (r *repo) GetUserByID(ctx context.Context, id string) (models.User, error) 
 func (r *repo) Save(ctx context.Context, u models.User) error {
 	_, err := r.es.ESClient.Index().
 		Index(elasticIndex).
-		Type(userType).
 		BodyJson(u).
 		Id(u.ID.String()).
 		Do(ctx)
@@ -55,7 +57,6 @@ func (r *repo) Save(ctx context.Context, u models.User) error {
 func (r *repo) Update(ctx context.Context, u models.User) error {
 	_, err := r.es.ESClient.Update().
 		Index(elasticIndex).
-		Type(userType).
 		Doc(u).
 		Id(u.ID.String()).
 		Do(ctx)
