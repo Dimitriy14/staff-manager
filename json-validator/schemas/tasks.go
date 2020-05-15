@@ -49,3 +49,18 @@ var TaskUpdateSchema = `
     "additionalProperties": false
 }
 `
+
+var TaskSearch = "TaskSearch"
+var TaskSearchSchema = `
+{
+    "type": "object",
+	"properties": {
+		"search": {
+			"type": "string",
+			"minLength": 1
+		}
+	},
+	"required": ["search"],
+    "additionalProperties": false
+}
+`

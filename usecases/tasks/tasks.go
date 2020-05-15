@@ -17,6 +17,7 @@ type TaskUsecase interface {
 	GetTasks(ctx context.Context, from, size int) ([]models.Task, error)
 	GetTaskByID(ctx context.Context, id uuid.UUID) (models.Task, error)
 	Search(ctx context.Context, search string) ([]models.TaskElastic, error)
+	SearchForUser(ctx context.Context, search, userID string) ([]models.TaskElastic, error)
 	Update(ctx context.Context, task models.TaskElastic) (models.Task, error)
 	DeleteTask(ctx context.Context, id uuid.UUID) error
 }
