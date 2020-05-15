@@ -66,7 +66,11 @@ var UserUpdateSchema = `
         "dateOfBirth": {
 			"type": "string",
 			"minLength": 8
-		}
+		},
+        "mood": {
+            "type": "string",
+            "minLength": 1
+        }
 	},
     "additionalProperties": false
 }

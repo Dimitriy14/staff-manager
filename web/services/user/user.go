@@ -159,6 +159,7 @@ func (u *userService) Update(w http.ResponseWriter, r *http.Request) {
 
 	oldUser.MobilePhone = user.MobilePhone
 	oldUser.DateOfBirth = user.DateOfBirth
+	oldUser.Mood = user.Mood
 	err = u.user.Update(ctx, oldUser)
 	if err != nil {
 		u.log.Warnf(txID, "cannot Update user by id(%s): err=%s", ua.UserID, err)
