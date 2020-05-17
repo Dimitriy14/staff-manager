@@ -294,7 +294,7 @@ func (ts *taskService) Update(w http.ResponseWriter, r *http.Request) {
 	t, err := ts.taskuc.Update(ctx, task)
 	if err != nil {
 		ts.log.Warnf(txID, "SaveTask userID=%s failed due to err=%s", ua.UserID, err)
-		ts.r.SendInternalServerError(ctx, w, "tasks saving failed")
+		ts.r.SendInternalServerError(ctx, w, "tasks updating failed")
 		return
 	}
 

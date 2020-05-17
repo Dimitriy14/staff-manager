@@ -536,6 +536,28 @@ paths:
             $ref: '#/definitions/common.Error'
       summary: Retrieves all recent changes for current user
 
+  /recent/user/{id}:
+    get:
+      tags:
+        - Authorised
+      produces:
+        - application/json
+      description: Retrieves all recent changes for user
+      parameters:
+        - $ref: '#/parameters/ObjectID'
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.RecentChanges'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Retrieves all recent changes for user
+
 
 definitions:
 
@@ -711,6 +733,11 @@ definitions:
       id:
         type: string
         format: uuid
+      title:
+        type: string
+      userName:
+        type: string
+        description: First and Last name of assigned user
       userID:
         type: string
         format: uuid
@@ -719,6 +746,12 @@ definitions:
         type: string
         format: uuid
         description: task creator or vacation requester
+      updatedByName:
+        type: string
+        description: First and Last name of user who update an item
+      updatedByID:
+        type: string
+        format: uuid
       incidentID:
         type: string
         format: uuid
