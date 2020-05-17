@@ -1,6 +1,11 @@
 package models
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+
+	"github.com/olivere/elastic/v7"
+)
 
 type RequireNewPasswordError struct {
 	Session string
@@ -33,6 +38,11 @@ func NewErrNotFound(format string, a ...interface{}) *ErrNotFound {
 
 // IsErrNotFound returns true if error is ErrNotFound
 func IsErrNotFound(err error) bool {
+	err = errors.Unwrap(err)
+	if elastic.IsNotFound(err) {
+		return true
+	}
+
 	_, ok := err.(*ErrNotFound)
 
 	return ok

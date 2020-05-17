@@ -31,7 +31,9 @@ type tasksRepo struct {
 
 func (r *tasksRepo) GetUserTasks(ctx context.Context, userID string) ([]models.TaskElastic, error) {
 	q := elastic.NewMatchQuery(assignedAttribute, userID)
+	filter := elastic.NewMatchQuery("isDeleted", true)
 	resp, err := r.es.ESClient.Search(taskIndex).
+		PostFilter(filter).
 		Query(q).
 		Do(ctx)
 
@@ -60,13 +62,13 @@ func (r *tasksRepo) SaveTask(ctx context.Context, task models.TaskElastic) error
 }
 
 func (r *tasksRepo) GetTasks(ctx context.Context, from, size int) ([]models.TaskElastic, error) {
-	q := elastic.NewMatchAllQuery()
+	filter := elastic.NewMatchQuery("isDeleted", true)
 	s := elastic.NewFieldSort("updatedAt").Desc()
 	resp, err := r.es.ESClient.Search(taskIndex).
 		From(from).
 		Size(size).
 		SortBy(s).
-		Query(q).
+		Query(filter).
 		Do(ctx)
 
 	if err != nil {
@@ -107,11 +109,11 @@ func (r *tasksRepo) GetNextTaskIndex(ctx context.Context) (int64, error) {
 		if elastic.IsNotFound(err) {
 			return 0, nil
 		}
-		return 0, err
+		return 1000, err
 	}
 
 	if resp.TotalHits() == 0 {
-		return 0, nil
+		return 1000, nil
 	}
 
 	max, found := resp.Aggregations.Max(number)
@@ -124,8 +126,11 @@ func (r *tasksRepo) GetNextTaskIndex(ctx context.Context) (int64, error) {
 
 func (r *tasksRepo) Search(ctx context.Context, search string) ([]models.TaskElastic, error) {
 	q := elastic.NewQueryStringQuery(search + "*").Fuzziness("AUTO")
+	filter := elastic.NewMatchQuery("isDeleted", true)
+
 	resp, err := r.es.ESClient.Search(taskIndex).
 		Query(q).
+		PostFilter(filter).
 		Do(ctx)
 	if err != nil {
 		return nil, err
@@ -143,8 +148,11 @@ func (r *tasksRepo) Search(ctx context.Context, search string) ([]models.TaskEla
 func (r *tasksRepo) SearchForUser(ctx context.Context, search, userID string) ([]models.TaskElastic, error) {
 	q := elastic.NewQueryStringQuery(search + "*").Fuzziness("AUTO")
 	user := elastic.NewMatchQuery(assignedAttribute, userID)
+	filter := elastic.NewMatchQuery("isDeleted", true)
+
 	resp, err := r.es.ESClient.Search(taskIndex).
 		PostFilter(user).
+		PostFilter(filter).
 		Query(q).
 		Do(ctx)
 	if err != nil {
@@ -165,14 +173,6 @@ func (r *tasksRepo) UpdateTask(ctx context.Context, task models.TaskElastic) err
 		Index(taskIndex).
 		Doc(task).
 		Id(task.ID.String()).
-		Do(ctx)
-	return err
-}
-
-func (r *tasksRepo) DeleteTask(ctx context.Context, id string) error {
-	_, err := r.es.ESClient.Delete().
-		Index(taskIndex).
-		Id(id).
 		Do(ctx)
 	return err
 }

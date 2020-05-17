@@ -68,8 +68,8 @@ func (r *Service) SendUnauthorized(ctx context.Context, w http.ResponseWriter, m
 }
 
 // SendNotFound sends Not Fount Status and logs an error if it exists
-func (r *Service) SendNotFound(ctx context.Context, w http.ResponseWriter, message string) {
-	r.sendMessage(ctx, w, http.StatusNotFound, message)
+func (r *Service) SendNotFound(ctx context.Context, w http.ResponseWriter, message string, v ...interface{}) {
+	r.sendMessage(ctx, w, http.StatusNotFound, message, v...)
 }
 
 // SendInternalServerError sends Internal Server Error Status and logs an error if it exists

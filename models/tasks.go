@@ -26,6 +26,7 @@ type Task struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 	CreatedAt   time.Time `json:"createdAt"`
 	Status      statuses  `json:"status"`
+	IsDeleted   bool      `json:"isDeleted"`
 }
 
 type TaskElastic struct {
@@ -39,6 +40,7 @@ type TaskElastic struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 	CreatedAt   time.Time `json:"createdAt"`
 	Status      statuses  `json:"status"`
+	IsDeleted   bool      `json:"isDeleted"`
 }
 
 func (t TaskElastic) IsAssigned() bool {

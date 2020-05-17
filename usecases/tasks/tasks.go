@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/Dimitriy14/staff-manager/models"
@@ -19,7 +20,7 @@ type TaskUsecase interface {
 	Search(ctx context.Context, search string) ([]models.TaskElastic, error)
 	SearchForUser(ctx context.Context, search, userID string) ([]models.TaskElastic, error)
 	Update(ctx context.Context, task models.TaskElastic) (models.Task, error)
-	DeleteTask(ctx context.Context, id uuid.UUID) error
+	DeleteTask(ctx context.Context, id uuid.UUID, userID string) error
 }
 
 func NewTaskUsecase(
@@ -34,7 +35,7 @@ func NewTaskUsecase(
 }
 
 const (
-	numOfWorker = 3
+	numOfWorker = 2
 )
 
 type taskUsecase struct {
@@ -47,7 +48,7 @@ type taskUsecase struct {
 func (u *taskUsecase) SaveTask(ctx context.Context, task models.TaskElastic) (models.Task, error) {
 	creatorUser, err := u.userRepo.GetUserByID(ctx, task.CreatedByID)
 	if err != nil {
-		return models.Task{}, models.NewErrNotFound("creator user with id=%s is not found", task.CreatedByID)
+		return models.Task{}, models.NewErrNotFound("creator user with id=%s is not found, err: %s", task.CreatedByID, err)
 	}
 
 	count, err := u.GetNextTaskIndex(ctx)
@@ -58,9 +59,11 @@ func (u *taskUsecase) SaveTask(ctx context.Context, task models.TaskElastic) (mo
 	task.Status = models.Ready
 
 	t := copyToTask(task)
+	t.CreatedBy = &creatorUser
+	t.UpdatedBy = &creatorUser
 
 	if task.IsAssigned() {
-		t.Assigned, err = u.assignedUser(ctx, task.AssignedID, creatorUser.ID.String(), task.ID)
+		t.Assigned, err = u.assignedUser(ctx, task.AssignedID, t)
 		if err != nil {
 			return models.Task{}, err
 		}
@@ -71,24 +74,29 @@ func (u *taskUsecase) SaveTask(ctx context.Context, task models.TaskElastic) (mo
 		return models.Task{}, errors.Wrap(err, "cannot save task")
 	}
 
-	t.CreatedBy = &creatorUser
-	t.UpdatedBy = &creatorUser
 	return t, nil
 }
 
-func (u *taskUsecase) assignedUser(ctx context.Context, assignedID, creatorID string, taskID uuid.UUID) (*models.User, error) {
-	assignedUser, err := u.userRepo.GetUserByID(ctx, assignedID)
+func (u *taskUsecase) assignedUser(ctx context.Context, assignedUserID string, task models.Task) (*models.User, error) {
+	assignedUser, err := u.userRepo.GetUserByID(ctx, assignedUserID)
 	if err != nil {
-		return nil, models.NewErrNotFound("assigned user with id=%s is not found", assignedID)
+		if models.IsErrNotFound(err) {
+			return nil, models.NewErrNotFound("assigned user with id=%s is not found", assignedUserID)
+		}
+		return nil, err
 	}
 
 	return &assignedUser, u.recentChangesRepo.Save(models.RecentChanges{
-		ID:         uuid.New(),
-		UserID:     assignedUser.ID.String(),
-		OwnerID:    creatorID,
-		IncidentID: taskID,
-		Type:       models.Assignment,
-		ChangeTime: time.Now(),
+		ID:            uuid.New(),
+		Title:         task.Title,
+		IncidentID:    task.ID,
+		Type:          models.Assignment,
+		UserName:      fmt.Sprintf("%s %s", assignedUser.FirstName, assignedUser.LastName),
+		UserID:        assignedUser.ID.String(),
+		OwnerID:       task.CreatedBy.ID.String(),
+		UpdatedByName: fmt.Sprintf("%s %s", task.UpdatedBy.FirstName, task.UpdatedBy.LastName),
+		UpdatedByID:   task.UpdatedBy.ID.String(),
+		ChangeTime:    time.Now().UTC(),
 	})
 }
 
@@ -128,30 +136,34 @@ func (u *taskUsecase) Update(ctx context.Context, task models.TaskElastic) (mode
 	task.CreatedAt = oldTask.CreatedAt
 	task.Number = oldTask.Number
 
+	t, err := u.joinTaskWithUsers(ctx, task)
+	if err != nil {
+		return models.Task{}, err
+	}
+
 	if oldTask.AssignedID != task.AssignedID && task.IsAssigned() {
-		_, err = u.assignedUser(ctx, task.AssignedID, task.CreatedByID, task.ID)
+		_, err = u.assignedUser(ctx, task.AssignedID, t)
 		if err != nil {
 			return models.Task{}, err
 		}
 	}
 
-	if oldTask.Status != task.Status {
+	if oldTask.Status != task.Status && task.IsAssigned() {
 		err = u.recentChangesRepo.Save(models.RecentChanges{
-			ID:         uuid.New(),
-			UserID:     task.AssignedID,
-			OwnerID:    task.CreatedByID,
-			IncidentID: task.ID,
-			Type:       models.TaskStatusChange,
-			ChangeTime: time.Now(),
+			ID:            uuid.New(),
+			Title:         task.Title,
+			IncidentID:    task.ID,
+			Type:          models.TaskStatusChange,
+			UserName:      fmt.Sprintf("%s %s", t.Assigned.FirstName, t.Assigned.LastName),
+			UserID:        task.AssignedID,
+			OwnerID:       task.CreatedByID,
+			UpdatedByName: fmt.Sprintf("%s %s", t.UpdatedBy.FirstName, t.UpdatedBy.LastName),
+			UpdatedByID:   t.UpdatedBy.ID.String(),
+			ChangeTime:    t.UpdatedAt,
 		})
 		if err != nil {
 			return models.Task{}, err
 		}
-	}
-
-	t, err := u.joinTaskWithUsers(ctx, task)
-	if err != nil {
-		return models.Task{}, err
 	}
 
 	return t, u.TaskRepository.UpdateTask(ctx, task)
@@ -210,19 +222,19 @@ func (u *taskUsecase) joinTaskWithUsers(ctx context.Context, task models.TaskEla
 	if task.IsAssigned() {
 		au, err := u.userRepo.GetUserByID(ctx, task.AssignedID)
 		if err != nil {
-			return models.Task{}, models.NewErrNotFound("assigned user with id=%s is not found", task.AssignedID)
+			return models.Task{}, models.NewErrNotFound("assigned user with id=%s is not found: err=%s", task.AssignedID, err)
 		}
 		assignedUser = &au
 	}
 
 	creatorUser, err := u.userRepo.GetUserByID(ctx, task.CreatedByID)
 	if err != nil {
-		return models.Task{}, models.NewErrNotFound("creator user with id=%s is not found", task.CreatedByID)
+		return models.Task{}, models.NewErrNotFound("creator user with id=%s is not found: err=%s", task.CreatedByID, err)
 	}
 
 	updaterUser, err := u.userRepo.GetUserByID(ctx, task.UpdatedByID)
 	if err != nil {
-		return models.Task{}, models.NewErrNotFound("updater user with id=%s is not found", task.UpdatedByID)
+		return models.Task{}, models.NewErrNotFound("updater user with id=%s is not found: %s", task.UpdatedByID, err)
 	}
 
 	t := copyToTask(task)
@@ -232,8 +244,15 @@ func (u *taskUsecase) joinTaskWithUsers(ctx context.Context, task models.TaskEla
 	return t, nil
 }
 
-func (u *taskUsecase) DeleteTask(ctx context.Context, id uuid.UUID) error {
-	return u.TaskRepository.DeleteTask(ctx, id.String())
+func (u *taskUsecase) DeleteTask(ctx context.Context, id uuid.UUID, userID string) error {
+	task, err := u.TaskRepository.GetTaskByID(ctx, id.String())
+	if err != nil {
+		return err
+	}
+	task.IsDeleted = true
+	task.UpdatedByID = userID
+
+	return u.TaskRepository.UpdateTask(ctx, task)
 }
 
 func copyToTask(te models.TaskElastic) models.Task {
@@ -245,5 +264,6 @@ func copyToTask(te models.TaskElastic) models.Task {
 		UpdatedAt:   te.UpdatedAt,
 		CreatedAt:   te.CreatedAt,
 		Status:      te.Status,
+		IsDeleted:   te.IsDeleted,
 	}
 }

@@ -27,11 +27,4 @@ type TaskRepository interface {
 	Search(ctx context.Context, search string) ([]models.TaskElastic, error)
 	SearchForUser(ctx context.Context, search, userID string) ([]models.TaskElastic, error)
 	UpdateTask(ctx context.Context, task models.TaskElastic) error
-	DeleteTask(ctx context.Context, id string) error
 }
-
-//
-// tasks  -get my tasks; post - create new one; put
-// tasks/all - all tasks
-// tasks/{id} - get
-// search task by number and title
