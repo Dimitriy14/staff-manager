@@ -72,6 +72,8 @@ func NewRouter(pathPrefix string, originHosts []string, s Services) *mux.Router 
 	authorisation.Path(fmt.Sprintf("/task/user/{id:%s}", UUIDPattern)).HandlerFunc(s.Task.GetUserTasks).Methods(http.MethodGet)
 
 	authorisation.Path("/recent").HandlerFunc(s.RecentChanges.GetRecentChanges).Methods(http.MethodGet)
+	authorisation.Path(fmt.Sprintf("/task/recent/{id:%s}", UUIDPattern)).HandlerFunc(s.RecentChanges.GetRecentChangesForUser).Methods(http.MethodGet)
+
 	var corsRouter = mux.NewRouter()
 	{
 		corsRouter.PathPrefix(pathPrefix).Handler(negroni.New(
