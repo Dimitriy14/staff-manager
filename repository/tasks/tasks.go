@@ -31,7 +31,7 @@ type tasksRepo struct {
 
 func (r *tasksRepo) GetUserTasks(ctx context.Context, userID string) ([]models.TaskElastic, error) {
 	q := elastic.NewMatchQuery(assignedAttribute, userID)
-	filter := elastic.NewMatchQuery("isDeleted", true)
+	filter := elastic.NewMatchQuery("isDeleted", false)
 	resp, err := r.es.ESClient.Search(taskIndex).
 		PostFilter(filter).
 		Query(q).
@@ -62,7 +62,7 @@ func (r *tasksRepo) SaveTask(ctx context.Context, task models.TaskElastic) error
 }
 
 func (r *tasksRepo) GetTasks(ctx context.Context, from, size int) ([]models.TaskElastic, error) {
-	filter := elastic.NewMatchQuery("isDeleted", true)
+	filter := elastic.NewMatchQuery("isDeleted", false)
 	s := elastic.NewFieldSort("updatedAt").Desc()
 	resp, err := r.es.ESClient.Search(taskIndex).
 		From(from).
@@ -126,7 +126,7 @@ func (r *tasksRepo) GetNextTaskIndex(ctx context.Context) (int64, error) {
 
 func (r *tasksRepo) Search(ctx context.Context, search string) ([]models.TaskElastic, error) {
 	q := elastic.NewQueryStringQuery(search + "*").Fuzziness("AUTO")
-	filter := elastic.NewMatchQuery("isDeleted", true)
+	filter := elastic.NewMatchQuery("isDeleted", false)
 
 	resp, err := r.es.ESClient.Search(taskIndex).
 		Query(q).
@@ -148,7 +148,7 @@ func (r *tasksRepo) Search(ctx context.Context, search string) ([]models.TaskEla
 func (r *tasksRepo) SearchForUser(ctx context.Context, search, userID string) ([]models.TaskElastic, error) {
 	q := elastic.NewQueryStringQuery(search + "*").Fuzziness("AUTO")
 	user := elastic.NewMatchQuery(assignedAttribute, userID)
-	filter := elastic.NewMatchQuery("isDeleted", true)
+	filter := elastic.NewMatchQuery("isDeleted", false)
 
 	resp, err := r.es.ESClient.Search(taskIndex).
 		PostFilter(user).
