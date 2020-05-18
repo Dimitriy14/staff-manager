@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/olivere/elastic/v7"
-	"github.com/pkg/errors"
 )
 
 type RequireNewPasswordError struct {
@@ -38,7 +37,7 @@ func NewErrNotFound(format string, a ...interface{}) *ErrNotFound {
 
 // IsErrNotFound returns true if error is ErrNotFound
 func IsErrNotFound(err error) bool {
-	err = errors.Unwrap(err)
+	//err = errors.Unwrap(err)
 	if elastic.IsNotFound(err) {
 		return true
 	}
