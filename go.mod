@@ -1,6 +1,6 @@
 module github.com/Dimitriy14/staff-manager
 
-go 1.13
+go 1.13.5
 
 require (
 	github.com/aws/aws-sdk-go v1.30.9
