@@ -1,10 +1,10 @@
 package models
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/olivere/elastic/v7"
+	"github.com/pkg/errors"
 )
 
 type RequireNewPasswordError struct {
