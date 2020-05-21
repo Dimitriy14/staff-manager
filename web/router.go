@@ -75,12 +75,12 @@ func NewRouter(pathPrefix string, originHosts []string, s Services) *mux.Router 
 	authorisation.Path(fmt.Sprintf("/task/user/{id:%s}", UUIDPattern)).HandlerFunc(s.Task.GetUserTasks).Methods(http.MethodGet)
 
 	authorisation.Path("/recent").HandlerFunc(s.RecentChanges.GetRecentChanges).Methods(http.MethodGet)
-	authorisation.Path(fmt.Sprintf("/recent/{id:%s}", UUIDPattern)).HandlerFunc(s.RecentChanges.GetRecentChangesForUser).Methods(http.MethodGet)
+	authorisation.Path(fmt.Sprintf("/recent/user/{id:%s}", UUIDPattern)).HandlerFunc(s.RecentChanges.GetRecentChangesForUser).Methods(http.MethodGet)
 
 	authorisation.Path("/vacations").HandlerFunc(s.Vacation.GetMyVacation).Methods(http.MethodGet)
 	authorisation.Path("/vacations").HandlerFunc(s.Vacation.CreateNew).Methods(http.MethodPost)
 	authorisation.Path(fmt.Sprintf("/vacations/{id:%s}", UUIDPattern)).HandlerFunc(s.Vacation.Cancel).Methods(http.MethodDelete)
-	authorisation.Path(fmt.Sprintf("/vacations/{id:%s}", UUIDPattern)).HandlerFunc(s.Vacation.UpdateStatus).Methods(http.MethodPut)
+	adminOnly.Path(fmt.Sprintf("/vacations/{id:%s}", UUIDPattern)).HandlerFunc(s.Vacation.UpdateStatus).Methods(http.MethodPut)
 	authorisation.Path(fmt.Sprintf("/vacations/user/{id:%s}", UUIDPattern)).HandlerFunc(s.Vacation.GetForUser).Methods(http.MethodGet)
 	authorisation.Path("/vacations/pending").HandlerFunc(s.Vacation.GetPending).Methods(http.MethodGet)
 	authorisation.Path("/vacations/all").HandlerFunc(s.Vacation.GetAll).Methods(http.MethodGet)

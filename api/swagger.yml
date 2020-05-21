@@ -558,6 +558,151 @@ paths:
             $ref: '#/definitions/common.Error'
       summary: Retrieves all recent changes for user
 
+  /vacations:
+    get:
+      tags:
+        - Authorised
+      produces:
+        - application/json
+      description: Retrieves all vacations for current user
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.Vacation'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Retrieves all vacations for current user
+    post:
+      tags:
+        - Authorised
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: task search
+          schema:
+            $ref: '#/definitions/models.CreateVacation'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Vacation'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Creates new vacation for current user
+
+  /vacations/{id}:
+    delete:
+      tags:
+        - Authorised
+      produces:
+        - application/json
+      description: Cancel vacation for user
+      parameters:
+        - $ref: '#/parameters/ObjectID'
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.Vacation'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Cancel vacation for user
+    put:
+      tags:
+        - Admin Only
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/ObjectID'
+        - in: body
+          name: VacationStatusUpdate
+          schema:
+            $ref: '#/definitions/models.VacationStatusUpdate'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Vacation'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Updates vacation status
+
+  /vacations/user/{id}:
+    get:
+      tags:
+        - Authorised
+      produces:
+        - application/json
+      description: Retrieves vacation for user
+      parameters:
+        - $ref: '#/parameters/ObjectID'
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.VacationDB'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Retrieves vacation for user
+
+  /vacations/pending:
+    get:
+      tags:
+        - Authorised
+      produces:
+        - application/json
+      description: Retrieves all pending vacations
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.VacationDB'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Retrieves all pending vacations
+
+  /vacations/all:
+    get:
+      tags:
+        - Authorised
+      produces:
+        - application/json
+      description: Retrieves all actual vacations
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.VacationDB'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Retrieves all actual vacations
+
 
 definitions:
 
@@ -795,6 +940,81 @@ definitions:
       status:
         type: string
         enum: ["Ready", "InProgress", "Done", "Blocked"]
+
+  models.Vacation:
+    properties:
+      id:
+        type: string
+        format: uuid
+      number:
+        type: integer
+      user:
+        type: object
+        $ref: '#/definitions/models.UserResponse'
+      startDate:
+        type: string
+        format: time
+      endDate:
+        type: string
+        format: time
+      status:
+        type: string
+        enum: ["Pending", "Approved", "Rejected", "Canceled", "Expired"]
+      updateTime:
+        type: string
+        format: time
+      statusChanger:
+        type: object
+        $ref: '#/definitions/models.UserResponse'
+      wasApproved:
+        type: boolean
+
+  models.VacationDB:
+    properties:
+      id:
+        type: string
+        format: uuid
+      number:
+        type: integer
+      userID:
+        type: string
+        format: uuid
+      userFullName:
+        type: string
+      startDate:
+        type: string
+        format: time
+      endDate:
+        type: string
+        format: time
+      status:
+        type: string
+        enum: ["Pending", "Approved", "Rejected", "Canceled", "Expired"]
+      updateTime:
+        type: string
+        format: time
+      statusChangerID:
+        type: string
+        format: uuid
+      statusChangerFullName:
+        type: string
+      wasApproved:
+        type: boolean
+
+  models.CreateVacation:
+    properties:
+      startDate:
+        type: string
+        format: date
+      endDate:
+        type: string
+        format: date
+
+  models.VacationStatusUpdate:
+    properties:
+      status:
+        type: string
+        enum: ["Approved", "Rejected"]
 
 
 
