@@ -43,7 +43,7 @@ func Load(cfg Config, log logger.Logger) (*Client, error) {
 	db.SetLogger(logger.NewGORMLogger(log))
 	db.LogMode(true)
 
-	db.AutoMigrate(&models.RecentChanges{})
+	db.AutoMigrate(&models.RecentChanges{}, &models.VacationDB{})
 	return &Client{Session: db, addr: fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)}, nil
 }
 

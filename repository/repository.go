@@ -28,3 +28,13 @@ type TaskRepository interface {
 	SearchForUser(ctx context.Context, search, userID string) ([]models.TaskElastic, error)
 	UpdateTask(ctx context.Context, task models.TaskElastic) error
 }
+
+type VacationRepository interface {
+	Save(ctx context.Context, vacation models.VacationDB) (*models.VacationDB, error)
+	Update(ctx context.Context, vacation models.VacationDB) error
+	GetAll(ctx context.Context) ([]models.VacationDB, error)
+	GetPending(ctx context.Context) ([]models.VacationDB, error)
+	GetForUser(ctx context.Context, userID string) ([]models.VacationDB, error)
+	GetByID(ctx context.Context, vacationID string) (*models.VacationDB, error)
+	GetPendingForUser(_ context.Context, userID string) ([]models.VacationDB, error)
+}
