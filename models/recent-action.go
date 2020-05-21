@@ -9,11 +9,11 @@ import (
 type ChangesType string
 
 const (
-	Assignment       ChangesType = "Assignment"
-	TaskStatusChange ChangesType = "TaskStatusChange"
-	TaskDeletion     ChangesType = "TaskDeletion"
-	VacationApprove  ChangesType = "VacationApprove"
-	VacationRequest  ChangesType = "VacationRequest"
+	Assignment           ChangesType = "Assignment"
+	TaskStatusChange     ChangesType = "TaskStatusChange"
+	TaskDeletion         ChangesType = "TaskDeletion"
+	VacationStatusChange ChangesType = "VacationStatusChange"
+	VacationRequest      ChangesType = "VacationRequest"
 )
 
 // Assignment task, status task, vacation-approve

@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/Dimitriy14/staff-manager/web/services/vacation"
+
 	awservices "github.com/Dimitriy14/staff-manager/aws"
 	"github.com/Dimitriy14/staff-manager/config"
 	"github.com/Dimitriy14/staff-manager/db"
@@ -12,9 +14,11 @@ import (
 	"github.com/Dimitriy14/staff-manager/repository/recent-action"
 	tasksRepo "github.com/Dimitriy14/staff-manager/repository/tasks"
 	"github.com/Dimitriy14/staff-manager/repository/user"
+	vacationRepo "github.com/Dimitriy14/staff-manager/repository/vacation"
 	authUsecase "github.com/Dimitriy14/staff-manager/usecases/auth"
 	"github.com/Dimitriy14/staff-manager/usecases/photos"
 	tasksuc "github.com/Dimitriy14/staff-manager/usecases/tasks"
+	vacationuc "github.com/Dimitriy14/staff-manager/usecases/vacation"
 	"github.com/Dimitriy14/staff-manager/web"
 	"github.com/Dimitriy14/staff-manager/web/middlewares"
 	"github.com/Dimitriy14/staff-manager/web/services/auth"
@@ -77,7 +81,11 @@ func LoadApplication(cfgFile string, signal chan os.Signal) (c Components, err e
 	photo := photos.NewPhotosUploader(awservices.GetS3Manager(sess, cfg.AWSRegion), cfg.StorageURL, cfg.BucketName)
 	uServ := userServ.NewUserService(restService, l, userRepo, authuc, photo)
 
+	vacRepo := vacationRepo.NewVacationRepo(pg)
 	recentActionRepo := recent.NewRecentActionRepo(pg)
+
+	vacationUseCase := vacationuc.NewVacationUseCase(vacRepo, userRepo, recentActionRepo)
+
 	taskRepository := tasksRepo.NewRepository(es)
 	taskuc := tasksuc.NewTaskUsecase(taskRepository, userRepo, recentActionRepo)
 	router := web.NewRouter(
@@ -94,6 +102,7 @@ func LoadApplication(cfgFile string, signal chan os.Signal) (c Components, err e
 			AdminOnly:      middlewares.AdminRestriction(l, restService),
 			Task:           tasks.NewTaskService(taskuc, restService, l),
 			RecentChanges:  recent_changes.NewService(recentActionRepo, restService, l),
+			Vacation:       vacation.NewService(restService, vacationUseCase, l),
 		})
 	server := web.NewServer(cfg.ListenURL, router, l, signal)
 	server.Start()

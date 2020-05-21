@@ -7,7 +7,7 @@ import (
 
 	"github.com/Dimitriy14/staff-manager/logger"
 	"github.com/Dimitriy14/staff-manager/models"
-	"github.com/olivere/elastic/v7"
+	elastic "github.com/olivere/elastic/v7"
 
 	"github.com/pkg/errors"
 )

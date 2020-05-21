@@ -6,11 +6,11 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/olivere/elastic/v7"
-	"github.com/pkg/errors"
-
 	"github.com/Dimitriy14/staff-manager/elasticsearch"
 	"github.com/Dimitriy14/staff-manager/models"
+
+	elastic "github.com/olivere/elastic/v7"
+	"github.com/pkg/errors"
 )
 
 const (

@@ -12,13 +12,15 @@ import (
 
 var (
 	schemaNames = map[string]string{
-		schemas.UserRegistration: schemas.UserRegistrationSchema,
-		schemas.SignIn:           schemas.SignInSchema,
-		schemas.UserUpdate:       schemas.UserUpdateSchema,
-		schemas.AdminUserUpdate:  schemas.AdminUserUpdateSchema,
-		schemas.TaskCreation:     schemas.TaskCreationSchema,
-		schemas.TaskUpdate:       schemas.TaskUpdateSchema,
-		schemas.TaskSearch:       schemas.TaskSearchSchema,
+		schemas.UserRegistration:     schemas.UserRegistrationSchema,
+		schemas.SignIn:               schemas.SignInSchema,
+		schemas.UserUpdate:           schemas.UserUpdateSchema,
+		schemas.AdminUserUpdate:      schemas.AdminUserUpdateSchema,
+		schemas.TaskCreation:         schemas.TaskCreationSchema,
+		schemas.TaskUpdate:           schemas.TaskUpdateSchema,
+		schemas.TaskSearch:           schemas.TaskSearchSchema,
+		schemas.VacationCreate:       schemas.VacationCreateSchema,
+		schemas.VacationStatusUpdate: schemas.VacationStatusUpdateSchema,
 	}
 
 	schemasMap = map[string]*gojsonschema.Schema{}
