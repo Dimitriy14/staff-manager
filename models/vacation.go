@@ -34,7 +34,7 @@ type Vacation struct {
 }
 
 type VacationDB struct {
-	ID                    uuid.UUID      `json:"id"`
+	ID                    uuid.UUID      `json:"id" gorm:"primary_key"`
 	Number                int            `json:"number" gorm:"AUTO_INCREMENT"`
 	UserID                string         `json:"userID"`
 	UserFullName          string         `json:"userFullName"`
