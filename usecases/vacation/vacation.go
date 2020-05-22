@@ -92,6 +92,7 @@ func (u *vacationsUsecase) Save(ctx context.Context, vacation models.VacationDB)
 }
 
 func (u *vacationsUsecase) UpdateVacationStatus(ctx context.Context, vacationID uuid.UUID, status models.VacationStatus) (*models.Vacation, error) {
+	userAcces := util.GetUserAccessFromCtx(ctx)
 	oldVacation, err := u.VacationRepository.GetByID(ctx, vacationID.String())
 	if err != nil {
 		return nil, err
@@ -111,12 +112,13 @@ func (u *vacationsUsecase) UpdateVacationStatus(ctx context.Context, vacationID 
 	oldVacation.WasApproved = status == models.Approved
 	oldVacation.Status = status
 	oldVacation.StatusChangerFullName = fmt.Sprintf("%s %s", statusChanger.FirstName, statusChanger.LastName)
+	oldVacation.StatusChangerID = userAcces.UserID
 	oldVacation.UpdateTime = time.Now().UTC()
 	vac := copyToVacation(*oldVacation)
 	vac.User = &user
 	vac.StatusChanger = &user
 
-	err = u.VacationRepository.Update(ctx, *oldVacation)
+	_, err = u.VacationRepository.Save(ctx, *oldVacation)
 	if err != nil {
 		return nil, err
 	}
