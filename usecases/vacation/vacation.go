@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Dimitriy14/staff-manager/logger"
+	transactionID "github.com/Dimitriy14/staff-manager/logger/transaction-id"
 	"github.com/Dimitriy14/staff-manager/models"
 	"github.com/Dimitriy14/staff-manager/repository"
 	"github.com/Dimitriy14/staff-manager/util"
@@ -14,24 +16,24 @@ import (
 	"github.com/google/uuid"
 )
 
-const day = time.Hour * time.Duration(24)
-
 type VacationsUsecase interface {
 	Save(ctx context.Context, vacation models.VacationDB) (*models.Vacation, error)
 	UpdateVacationStatus(ctx context.Context, vacationID uuid.UUID, status models.VacationStatus) (*models.Vacation, error)
-	GetAll(ctx context.Context) ([]models.VacationDB, error)
-	GetPending(ctx context.Context) ([]models.VacationDB, error)
-	GetForUser(ctx context.Context, userID string) ([]models.VacationDB, error)
+	GetAll(ctx context.Context) ([]models.Vacation, error)
+	GetPending(ctx context.Context) ([]models.Vacation, error)
+	GetForUser(ctx context.Context, userID string) ([]models.Vacation, error)
 	GetByID(ctx context.Context, vacationID uuid.UUID) (*models.Vacation, error)
 }
 
 func NewVacationUseCase(vacationRepo repository.VacationRepository,
 	userRepo repository.UserRepository,
-	recentChangesRepo repository.RecentActionRepository) *vacationsUsecase {
+	recentChangesRepo repository.RecentActionRepository,
+	log logger.Logger) *vacationsUsecase {
 	return &vacationsUsecase{
 		VacationRepository: vacationRepo,
 		userRepo:           userRepo,
 		recentChangesRepo:  recentChangesRepo,
+		log:                log,
 	}
 }
 
@@ -39,6 +41,7 @@ type vacationsUsecase struct {
 	repository.VacationRepository
 	userRepo          repository.UserRepository
 	recentChangesRepo repository.RecentActionRepository
+	log               logger.Logger
 }
 
 func (u *vacationsUsecase) Save(ctx context.Context, vacation models.VacationDB) (*models.Vacation, error) {
@@ -161,6 +164,73 @@ func (u *vacationsUsecase) GetByID(ctx context.Context, vacationID uuid.UUID) (*
 	vacation.User = &user
 
 	return &vacation, err
+}
+
+func (u *vacationsUsecase) GetAll(ctx context.Context) ([]models.Vacation, error) {
+	vacationsDB, err := u.VacationRepository.GetAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return u.joinVacationsWithUser(ctx, vacationsDB...)
+}
+
+func (u *vacationsUsecase) joinVacationsWithUser(ctx context.Context, vacationsDB ...models.VacationDB) ([]models.Vacation, error) {
+	var (
+		txID      = transactionID.FromContext(ctx)
+		vacations = make([]models.Vacation, 0, len(vacationsDB))
+		users     = make(map[string]models.User, len(vacationsDB)*2)
+		err       error
+	)
+
+	for _, vac := range vacationsDB {
+		v := copyToVacation(vac)
+		user, ok := users[vac.UserID]
+		if !ok {
+			user, err = u.userRepo.GetUserByID(ctx, vac.UserID)
+			if err != nil {
+				u.log.Warnf(txID, "skipping vacation due to invalid userID=%s", vac.UserID)
+				continue
+			}
+			users[vac.UserID] = user
+		}
+		v.User = &user
+
+		if vac.StatusChangerID == "" {
+			vacations = append(vacations, v)
+			continue
+		}
+
+		admin, ok := users[vac.StatusChangerID]
+		if !ok {
+			user, err = u.userRepo.GetUserByID(ctx, vac.StatusChangerID)
+			if err != nil {
+				u.log.Warnf(txID, "skipping vacation due to invalid statusChangerID=%s", vac.StatusChangerID)
+				continue
+			}
+			users[vac.StatusChangerID] = admin
+		}
+		v.StatusChanger = &admin
+		vacations = append(vacations, v)
+	}
+	return vacations, nil
+}
+
+func (u *vacationsUsecase) GetPending(ctx context.Context) ([]models.Vacation, error) {
+	vacationsDB, err := u.VacationRepository.GetPending(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return u.joinVacationsWithUser(ctx, vacationsDB...)
+}
+func (u *vacationsUsecase) GetForUser(ctx context.Context, userID string) ([]models.Vacation, error) {
+	vacationsDB, err := u.VacationRepository.GetForUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return u.joinVacationsWithUser(ctx, vacationsDB...)
 }
 
 func copyToVacation(v models.VacationDB) models.Vacation {
