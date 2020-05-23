@@ -84,7 +84,7 @@ func LoadApplication(cfgFile string, signal chan os.Signal) (c Components, err e
 	vacRepo := vacationRepo.NewVacationRepo(pg)
 	recentActionRepo := recent.NewRecentActionRepo(pg)
 
-	vacationUseCase := vacationuc.NewVacationUseCase(vacRepo, userRepo, recentActionRepo)
+	vacationUseCase := vacationuc.NewVacationUseCase(vacRepo, userRepo, recentActionRepo, l)
 
 	taskRepository := tasksRepo.NewRepository(es)
 	taskuc := tasksuc.NewTaskUsecase(taskRepository, userRepo, recentActionRepo)
