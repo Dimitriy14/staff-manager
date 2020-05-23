@@ -203,7 +203,7 @@ func (u *vacationsUsecase) joinVacationsWithUser(ctx context.Context, vacationsD
 
 		admin, ok := users[vac.StatusChangerID]
 		if !ok {
-			user, err = u.userRepo.GetUserByID(ctx, vac.StatusChangerID)
+			admin, err = u.userRepo.GetUserByID(ctx, vac.StatusChangerID)
 			if err != nil {
 				u.log.Warnf(txID, "skipping vacation due to invalid statusChangerID=%s", vac.StatusChangerID)
 				continue
