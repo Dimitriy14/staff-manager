@@ -32,6 +32,7 @@ type Service interface {
 	GetForUser(w http.ResponseWriter, r *http.Request)
 	GetMyVacation(w http.ResponseWriter, r *http.Request)
 	GetPending(w http.ResponseWriter, r *http.Request)
+	GetByID(w http.ResponseWriter, r *http.Request)
 	CreateNew(w http.ResponseWriter, r *http.Request)
 	UpdateStatus(w http.ResponseWriter, r *http.Request)
 	Cancel(w http.ResponseWriter, r *http.Request)
@@ -224,6 +225,30 @@ func (s *serviceImpl) Cancel(w http.ResponseWriter, r *http.Request) {
 	vac, err := s.vac.UpdateVacationStatus(ctx, uid, models.Canceled)
 	if err != nil {
 		s.log.Warnf(txID, "UpdateVacationStatus(ctx, id=%s, status=%s) err=%s", uid.String(), models.Canceled, err)
+		s.r.SendInternalServerError(ctx, w, "vacation retrieving failed")
+		return
+	}
+
+	s.r.RenderJSON(ctx, w, vac)
+}
+
+func (s *serviceImpl) GetByID(w http.ResponseWriter, r *http.Request) {
+	var (
+		ctx  = r.Context()
+		txID = transactionID.FromContext(ctx)
+		id   = mux.Vars(r)["id"]
+	)
+
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		s.log.Warnf(txID, "invalid vacation id: err=%s", err)
+		s.r.SendBadRequest(ctx, w, "invalid vacation id: err=%s", err)
+		return
+	}
+
+	vac, err := s.vac.GetByID(ctx, uid)
+	if err != nil {
+		s.log.Warnf(txID, "GetVacationByID(ctx, id=%s, status=%s) err=%s", uid.String(), models.Canceled, err)
 		s.r.SendInternalServerError(ctx, w, "vacation retrieving failed")
 		return
 	}

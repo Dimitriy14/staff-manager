@@ -599,6 +599,24 @@ paths:
       summary: Creates new vacation for current user
 
   /vacations/{id}:
+    get:
+      tags:
+        - Authorised
+      produces:
+        - application/json
+      description: Cancel vacation for user
+      parameters:
+        - $ref: '#/parameters/ObjectID'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Vacation'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Cancel vacation for user
     delete:
       tags:
         - Authorised
@@ -656,7 +674,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/models.VacationDB'
+              $ref: '#/definitions/models.Vacation'
         "500":
           description: Internal Server Error
           schema:
@@ -676,7 +694,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/models.VacationDB'
+              $ref: '#/definitions/models.Vacation'
         "500":
           description: Internal Server Error
           schema:
@@ -696,7 +714,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/models.VacationDB'
+              $ref: '#/definitions/models.Vacation'
         "500":
           description: Internal Server Error
           schema:
