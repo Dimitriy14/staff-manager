@@ -79,6 +79,7 @@ func NewRouter(pathPrefix string, originHosts []string, s Services) *mux.Router 
 
 	authorisation.Path("/vacations").HandlerFunc(s.Vacation.GetMyVacation).Methods(http.MethodGet)
 	authorisation.Path("/vacations").HandlerFunc(s.Vacation.CreateNew).Methods(http.MethodPost)
+	authorisation.Path(fmt.Sprintf("/vacations/{id:%s}", UUIDPattern)).HandlerFunc(s.Vacation.GetByID).Methods(http.MethodGet)
 	authorisation.Path(fmt.Sprintf("/vacations/{id:%s}", UUIDPattern)).HandlerFunc(s.Vacation.Cancel).Methods(http.MethodDelete)
 	adminOnly.Path(fmt.Sprintf("/vacations/{id:%s}", UUIDPattern)).HandlerFunc(s.Vacation.UpdateStatus).Methods(http.MethodPut)
 	authorisation.Path(fmt.Sprintf("/vacations/user/{id:%s}", UUIDPattern)).HandlerFunc(s.Vacation.GetForUser).Methods(http.MethodGet)
