@@ -28,4 +28,5 @@ type RecentChanges struct {
 	UpdatedByName string      `json:"updatedByName"`
 	UpdatedByID   string      `json:"updatedByID"`
 	ChangeTime    time.Time   `json:"changeTime"`
+	Status        string      `json:"status"`
 }

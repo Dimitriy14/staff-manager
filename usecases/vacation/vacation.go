@@ -86,6 +86,7 @@ func (u *vacationsUsecase) Save(ctx context.Context, vacation models.VacationDB)
 		UserID:     user.ID.String(),
 		OwnerID:    user.ID.String(),
 		ChangeTime: vacation.UpdateTime,
+		Status:     string(vacation.Status),
 	})
 
 	return &vac, err
@@ -134,6 +135,7 @@ func (u *vacationsUsecase) UpdateVacationStatus(ctx context.Context, vacationID 
 		UpdatedByName: oldVacation.StatusChangerFullName,
 		UpdatedByID:   oldVacation.StatusChangerID,
 		ChangeTime:    oldVacation.UpdateTime,
+		Status:        string(status),
 	})
 
 	return &vac, err
