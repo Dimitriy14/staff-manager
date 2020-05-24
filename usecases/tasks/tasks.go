@@ -97,6 +97,7 @@ func (u *taskUsecase) assignedUser(ctx context.Context, assignedUserID string, t
 		UpdatedByName: fmt.Sprintf("%s %s", task.UpdatedBy.FirstName, task.UpdatedBy.LastName),
 		UpdatedByID:   task.UpdatedBy.ID.String(),
 		ChangeTime:    time.Now().UTC(),
+		Status:        string(task.Status),
 	})
 }
 
@@ -160,6 +161,7 @@ func (u *taskUsecase) Update(ctx context.Context, task models.TaskElastic) (mode
 			UpdatedByName: fmt.Sprintf("%s %s", t.UpdatedBy.FirstName, t.UpdatedBy.LastName),
 			UpdatedByID:   t.UpdatedBy.ID.String(),
 			ChangeTime:    t.UpdatedAt,
+			Status:        string(task.Status),
 		})
 		if err != nil {
 			return models.Task{}, err
