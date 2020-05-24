@@ -88,7 +88,7 @@ func (u *taskUsecase) assignedUser(ctx context.Context, assignedUserID string, t
 
 	return &assignedUser, u.recentChangesRepo.Save(models.RecentChanges{
 		ID:            uuid.New(),
-		Title:         task.Title,
+		Title:         fmt.Sprintf("%d %s", task.Number, task.Title),
 		IncidentID:    task.ID,
 		Type:          models.Assignment,
 		UserName:      fmt.Sprintf("%s %s", assignedUser.FirstName, assignedUser.LastName),
@@ -151,7 +151,7 @@ func (u *taskUsecase) Update(ctx context.Context, task models.TaskElastic) (mode
 	if oldTask.Status != task.Status && task.IsAssigned() {
 		err = u.recentChangesRepo.Save(models.RecentChanges{
 			ID:            uuid.New(),
-			Title:         task.Title,
+			Title:         fmt.Sprintf("%d %s", task.Number, task.Title),
 			IncidentID:    task.ID,
 			Type:          models.TaskStatusChange,
 			UserName:      fmt.Sprintf("%s %s", t.Assigned.FirstName, t.Assigned.LastName),

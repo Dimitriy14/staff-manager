@@ -51,10 +51,7 @@ func (u *vacationsUsecase) Save(ctx context.Context, vacation models.VacationDB)
 	}
 
 	for _, actualVacation := range actualVacations {
-		if isTimeIntersected(
-			actualVacation.StartDate, actualVacation.EndDate,
-			vacation.StartDate, vacation.EndDate,
-		) {
+		if isTimeIntersected(actualVacation.StartDate, actualVacation.EndDate, vacation.StartDate, vacation.EndDate) {
 			return nil, errors.New(
 				fmt.Sprintf(
 					"cannot create vacation with start date = %s, reason: intersection with actual vacation with id = %s ends at %s",
@@ -82,7 +79,7 @@ func (u *vacationsUsecase) Save(ctx context.Context, vacation models.VacationDB)
 
 	err = u.recentChangesRepo.Save(models.RecentChanges{
 		ID:         uuid.New(),
-		Title:      "Vacation",
+		Title:      fmt.Sprintf("%d Vacation", vac.Number),
 		IncidentID: vacation.ID,
 		Type:       models.VacationRequest,
 		UserName:   vacation.UserFullName,
@@ -119,7 +116,7 @@ func (u *vacationsUsecase) UpdateVacationStatus(ctx context.Context, vacationID 
 	oldVacation.UpdateTime = time.Now().UTC()
 	vac := copyToVacation(*oldVacation)
 	vac.User = &user
-	vac.StatusChanger = &user
+	vac.StatusChanger = &statusChanger
 
 	_, err = u.VacationRepository.Save(ctx, *oldVacation)
 	if err != nil {
@@ -128,7 +125,7 @@ func (u *vacationsUsecase) UpdateVacationStatus(ctx context.Context, vacationID 
 
 	err = u.recentChangesRepo.Save(models.RecentChanges{
 		ID:            uuid.New(),
-		Title:         string(status),
+		Title:         fmt.Sprintf("%d Vacation %s", vac.Number, status),
 		IncidentID:    oldVacation.ID,
 		Type:          models.VacationStatusChange,
 		UserName:      fmt.Sprintf("%s %s", user.FirstName, user.LastName),
