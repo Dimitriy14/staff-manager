@@ -17,6 +17,7 @@ const (
 	elasticIndex = "staff"
 	userType     = "user"
 
+	role           = "role"
 	userName       = "firstName"
 	userSecondName = "lastName"
 	position       = "position"
@@ -87,6 +88,25 @@ func (r *repo) SearchUsers(ctx context.Context, us models.UserSearch) ([]models.
 		Do(ctx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "searching user by name %s", us.ByName)
+	}
+
+	users := make([]models.User, 0, resp.TotalHits())
+	for _, u := range resp.Each(reflect.TypeOf(models.User{})) {
+		if user, ok := u.(models.User); ok {
+			users = append(users, user)
+		}
+	}
+	return users, nil
+}
+
+func (r *repo) GetAdmins(ctx context.Context) ([]models.User, error) {
+	q := elastic.NewMatchQuery(role, models.AdminRole)
+	resp, err := r.es.ESClient.
+		Search(elasticIndex).
+		Query(q).
+		Do(ctx)
+	if err != nil {
+		return nil, errors.Wrapf(err, "searching admins")
 	}
 
 	users := make([]models.User, 0, resp.TotalHits())

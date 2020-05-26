@@ -162,6 +162,10 @@ func (s *serviceImpl) CreateNew(w http.ResponseWriter, r *http.Request) {
 	vac, err := s.vac.Save(ctx, v)
 	if err != nil {
 		s.log.Warnf(txID, "vacation.Save(ctx, vacation=%#v) err=%s", v, err)
+		if models.IsErrInvalidData(err) {
+			s.r.SendBadRequest(ctx, w, "cannot create vacation: %s", err)
+			return
+		}
 		s.r.SendInternalServerError(ctx, w, "vacation saving failed due to: %s", err)
 		return
 	}

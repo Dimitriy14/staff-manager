@@ -43,6 +43,7 @@ type Service interface {
 
 	GetCollege(w http.ResponseWriter, r *http.Request)
 	GetUser(w http.ResponseWriter, r *http.Request)
+	GetAdmins(w http.ResponseWriter, r *http.Request)
 
 	AdminUserUpdate(w http.ResponseWriter, r *http.Request)
 	Update(w http.ResponseWriter, r *http.Request)
@@ -109,7 +110,6 @@ func (u *userService) GetUser(w http.ResponseWriter, r *http.Request) {
 	u.r.RenderJSON(ctx, w, user)
 }
 
-// GetCollege in perspective should not retrieve all information
 func (u *userService) GetCollege(w http.ResponseWriter, r *http.Request) {
 	var (
 		ctx  = r.Context()
@@ -125,7 +125,22 @@ func (u *userService) GetCollege(w http.ResponseWriter, r *http.Request) {
 	}
 
 	u.r.RenderJSON(ctx, w, user)
+}
 
+func (u *userService) GetAdmins(w http.ResponseWriter, r *http.Request) {
+	var (
+		ctx  = r.Context()
+		txID = transactionID.FromContext(ctx)
+	)
+
+	user, err := u.user.GetAdmins(ctx)
+	if err != nil {
+		u.log.Warnf(txID, "cannot retrieve admins: err=%s", err)
+		u.r.SendInternalServerError(ctx, w, "cannot retrieve admins: err=%s", err)
+		return
+	}
+
+	u.r.RenderJSON(ctx, w, user)
 }
 
 func (u *userService) Update(w http.ResponseWriter, r *http.Request) {
