@@ -257,6 +257,33 @@ paths:
             $ref: '#/definitions/common.Error'
       summary: Search user by name
 
+  /user/admins:
+    get:
+      tags:
+        - Authorised
+      consumes:
+        - application/json
+      description: Get admins
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: user
+          schema:
+            $ref: '#/definitions/models.UserSearch'
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.UserResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.Error'
+      summary: Get admins
+
 
   /user/photo:
     post:
