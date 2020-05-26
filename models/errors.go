@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/olivere/elastic/v7"
@@ -38,12 +37,35 @@ func NewErrNotFound(format string, a ...interface{}) *ErrNotFound {
 
 // IsErrNotFound returns true if error is ErrNotFound
 func IsErrNotFound(err error) bool {
-	err = errors.Unwrap(err)
 	if elastic.IsNotFound(err) {
 		return true
 	}
 
 	_, ok := err.(*ErrNotFound)
+
+	return ok
+}
+
+// ErrInvalidData is error type that denotes that everything worked correctly but value was not found
+type ErrInvalidData struct {
+	msg string
+}
+
+// Error so that ErrInvalidData implements error interface
+func (e *ErrInvalidData) Error() string {
+	return e.msg
+}
+
+// NewErrInvalidData is constructor for ErrNotFound
+func NewErrInvalidData(format string, a ...interface{}) *ErrInvalidData {
+	return &ErrInvalidData{
+		msg: fmt.Sprintf(format, a...),
+	}
+}
+
+// IsErrInvalidData returns true if error is ErrNotFound
+func IsErrInvalidData(err error) bool {
+	_, ok := err.(*ErrInvalidData)
 
 	return ok
 }

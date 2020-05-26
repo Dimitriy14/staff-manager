@@ -2,7 +2,6 @@ package vacation
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -52,10 +51,9 @@ func (u *vacationsUsecase) Save(ctx context.Context, vacation models.VacationDB)
 
 	for _, actualVacation := range actualVacations {
 		if isTimeIntersected(actualVacation.StartDate, actualVacation.EndDate, vacation.StartDate, vacation.EndDate) {
-			return nil, errors.New(
-				fmt.Sprintf(
-					"cannot create vacation with start date = %s, reason: intersection with actual vacation with id = %s ends at %s",
-					vacation.StartDate, actualVacation.ID, actualVacation.EndDate))
+			return nil, models.NewErrInvalidData(
+				"cannot create vacation with start date = %s, reason: intersection with actual vacation with id = %s ends at %s",
+				vacation.StartDate, actualVacation.ID, actualVacation.EndDate)
 		}
 	}
 

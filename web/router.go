@@ -57,6 +57,7 @@ func NewRouter(pathPrefix string, originHosts []string, s Services) *mux.Router 
 	authorisation.Path("/user").HandlerFunc(s.User.GetUser).Methods(http.MethodGet)
 	authorisation.Path("/user").HandlerFunc(s.User.Update).Methods(http.MethodPut)
 	authorisation.Path("/user/photo").HandlerFunc(s.User.UploadImage).Methods(http.MethodPost)
+	authorisation.Path("/user/admins").HandlerFunc(s.User.GetAdmins).Methods(http.MethodGet)
 
 	authorisation.Path(fmt.Sprintf("/user/{id:%s}", UUIDPattern)).HandlerFunc(s.User.GetCollege).Methods(http.MethodGet)
 
