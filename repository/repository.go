@@ -34,6 +34,7 @@ type VacationRepository interface {
 	Save(ctx context.Context, vacation models.VacationDB) (*models.VacationDB, error)
 	Update(ctx context.Context, vacation models.VacationDB) error
 	GetAll(ctx context.Context) ([]models.VacationDB, error)
+	GetActual(ctx context.Context) ([]models.VacationDB, error)
 	GetPending(ctx context.Context) ([]models.VacationDB, error)
 	GetForUser(ctx context.Context, userID string) ([]models.VacationDB, error)
 	GetByID(ctx context.Context, vacationID string) (*models.VacationDB, error)

@@ -2,6 +2,7 @@ package vacation
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -36,6 +37,7 @@ type Service interface {
 	CreateNew(w http.ResponseWriter, r *http.Request)
 	UpdateStatus(w http.ResponseWriter, r *http.Request)
 	Cancel(w http.ResponseWriter, r *http.Request)
+	UpdateExpired(w http.ResponseWriter, r *http.Request)
 }
 
 type serviceImpl struct {
@@ -258,4 +260,15 @@ func (s *serviceImpl) GetByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.r.RenderJSON(ctx, w, vac)
+}
+
+func (s *serviceImpl) UpdateExpired(w http.ResponseWriter, r *http.Request) {
+	var (
+		ctx  = r.Context()
+		txID = transactionID.FromContext(ctx)
+	)
+
+	go s.vac.SetExpired(ctx)
+
+	s.r.RenderJSON(ctx, w, rest.Message{Message: fmt.Sprintf("vacation status update started with txID = %s", txID)})
 }
