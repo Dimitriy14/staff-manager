@@ -86,7 +86,7 @@ func NewRouter(pathPrefix string, originHosts []string, s Services) *mux.Router 
 	authorisation.Path(fmt.Sprintf("/vacations/user/{id:%s}", UUIDPattern)).HandlerFunc(s.Vacation.GetForUser).Methods(http.MethodGet)
 	authorisation.Path("/vacations/pending").HandlerFunc(s.Vacation.GetPending).Methods(http.MethodGet)
 	authorisation.Path("/vacations/all").HandlerFunc(s.Vacation.GetAll).Methods(http.MethodGet)
-	router.Path("/vacations/expired").HandlerFunc(s.Vacation.UpdateStatus).Methods(http.MethodPost)
+	router.Path("/vacations/expired").HandlerFunc(s.Vacation.UpdateExpired).Methods(http.MethodPost)
 
 	var corsRouter = mux.NewRouter()
 	{
