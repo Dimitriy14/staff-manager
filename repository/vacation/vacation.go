@@ -35,6 +35,17 @@ func (r *vacationRepo) Update(_ context.Context, vacation models.VacationDB) err
 
 func (r *vacationRepo) GetAll(_ context.Context) ([]models.VacationDB, error) {
 	vacations := make([]models.VacationDB, 0)
+	errs := r.Session.
+		Find(&vacations).
+		GetErrors()
+	if len(errs) > 1 {
+		return nil, errors.Wrap(concatErrors(errs...), "getting all vacation error")
+	}
+	return vacations, nil
+}
+
+func (r *vacationRepo) GetActual(_ context.Context) ([]models.VacationDB, error) {
+	vacations := make([]models.VacationDB, 0)
 	errs := r.Session.Where("status in (?, ?, ?)", models.Pending, models.Approved, models.Rejected).
 		Order("start_date").
 		Find(&vacations).

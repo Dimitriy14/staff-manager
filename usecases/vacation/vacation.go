@@ -22,6 +22,7 @@ type VacationsUsecase interface {
 	GetPending(ctx context.Context) ([]models.Vacation, error)
 	GetForUser(ctx context.Context, userID string) ([]models.Vacation, error)
 	GetByID(ctx context.Context, vacationID uuid.UUID) (*models.Vacation, error)
+	SetExpired(ctx context.Context)
 }
 
 func NewVacationUseCase(vacationRepo repository.VacationRepository,
@@ -163,8 +164,30 @@ func (u *vacationsUsecase) GetByID(ctx context.Context, vacationID uuid.UUID) (*
 	return &vacation, err
 }
 
+func (u *vacationsUsecase) SetExpired(ctx context.Context) {
+	txID := transactionID.FromContext(ctx)
+	vacDB, err := u.VacationRepository.GetAll(ctx)
+	if err != nil {
+		u.log.Errorf(txID, "cannot retrieve all vacations")
+		return
+	}
+
+	now := time.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+
+	for _, vacation := range vacDB {
+		if vacation.EndDate.After(today) {
+			vacation.Status = models.Expired
+			err = u.VacationRepository.Update(ctx, vacation)
+			if err != nil {
+				u.log.Errorf(txID, "cannot set Expired status for vacation id = %s due to err = %s", vacation.ID, err)
+			}
+		}
+	}
+}
+
 func (u *vacationsUsecase) GetAll(ctx context.Context) ([]models.Vacation, error) {
-	vacationsDB, err := u.VacationRepository.GetAll(ctx)
+	vacationsDB, err := u.VacationRepository.GetActual(ctx)
 	if err != nil {
 		return nil, err
 	}
