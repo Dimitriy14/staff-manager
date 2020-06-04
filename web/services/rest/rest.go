@@ -42,8 +42,7 @@ func (r *Service) RenderJSON(ctx context.Context, w http.ResponseWriter, respons
 func (r *Service) render(ctx context.Context, w http.ResponseWriter, code int, response []byte) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
-	// HTTP access control (CORS)
-	w.Header().Set(accessControlAllowOrigin, "*")
+	r.log.Debugf("noTX", "HEADER: %#v", w.Header())
 
 	w.WriteHeader(code)
 	_, err := w.Write(response)
