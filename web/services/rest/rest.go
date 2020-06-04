@@ -20,8 +20,7 @@ type Service struct {
 
 const (
 	// UUIDPattern a pattern for UUID matchers
-	UUIDPattern              = `(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})`
-	accessControlAllowOrigin = "Access-Control-Allow-Origin"
+	UUIDPattern = `(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})`
 )
 
 // Message contains the message to send as a response
@@ -79,7 +78,6 @@ func (r *Service) SendInternalServerError(ctx context.Context, w http.ResponseWr
 // SendMessage writes a defined string as an error message
 // with appropriate headers to the HTTP response
 func (r *Service) sendMessage(ctx context.Context, w http.ResponseWriter, code int, format string, v ...interface{}) {
-	w.Header().Set(accessControlAllowOrigin, "*")
 	errorMessage := Message{Message: fmt.Sprintf(format, v...)}
 
 	data, err := json.Marshal(errorMessage)
