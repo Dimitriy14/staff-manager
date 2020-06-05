@@ -133,6 +133,7 @@ func (a *authService) passwordChangeRequired(ctx context.Context, w http.Respons
 		Path:     models.CookiePath,
 		Expires:  time.Now().Add(sessionExpiration),
 		HttpOnly: true,
+		SameSite: http.SameSiteDefaultMode,
 	})
 
 	a.r.RenderJSON(ctx, w, rest.Message{Message: "New password is required"})
