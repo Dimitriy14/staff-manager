@@ -43,15 +43,17 @@ func RetrieveAndValidate(schemaName string, log logger.Logger, req *http.Request
 
 func SetSecureTokens(aout models.AuthOutput, w http.ResponseWriter) {
 	http.SetCookie(w, &http.Cookie{
-		Name:  models.AccessToken,
-		Value: aout.AccessToken,
-		Path:  models.CookiePath,
+		Name:     models.AccessToken,
+		Value:    aout.AccessToken,
+		Path:     models.CookiePath,
+		HttpOnly: true,
 	})
 
 	http.SetCookie(w, &http.Cookie{
-		Name:  models.RefreshToken,
-		Value: aout.RefreshToken,
-		Path:  models.CookiePath,
+		Name:     models.RefreshToken,
+		Value:    aout.RefreshToken,
+		Path:     models.CookiePath,
+		HttpOnly: true,
 	})
 }
 
