@@ -47,6 +47,7 @@ func SetSecureTokens(aout models.AuthOutput, w http.ResponseWriter) {
 		Value:    aout.AccessToken,
 		Path:     models.CookiePath,
 		HttpOnly: true,
+		SameSite: http.SameSiteDefaultMode,
 	})
 
 	http.SetCookie(w, &http.Cookie{
@@ -54,6 +55,7 @@ func SetSecureTokens(aout models.AuthOutput, w http.ResponseWriter) {
 		Value:    aout.RefreshToken,
 		Path:     models.CookiePath,
 		HttpOnly: true,
+		SameSite: http.SameSiteDefaultMode,
 	})
 }
 
