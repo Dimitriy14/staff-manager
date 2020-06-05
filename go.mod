@@ -7,7 +7,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/mux v1.7.4
 	github.com/jinzhu/gorm v1.9.12
-	github.com/olivere/elastic/v7 v7.0.15
+	github.com/olivere/elastic/v7 v7.0.16
 	github.com/pkg/errors v0.9.1
 	github.com/rs/cors v1.7.0
 	github.com/senseyeio/spaniel v1.0.0

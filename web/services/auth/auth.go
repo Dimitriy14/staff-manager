@@ -128,10 +128,11 @@ func (a *authService) SignIn(w http.ResponseWriter, r *http.Request) {
 
 func (a *authService) passwordChangeRequired(ctx context.Context, w http.ResponseWriter, sess string) {
 	http.SetCookie(w, &http.Cookie{
-		Name:    sessionCookie,
-		Value:   sess,
-		Path:    models.CookiePath,
-		Expires: time.Now().Add(sessionExpiration),
+		Name:     sessionCookie,
+		Value:    sess,
+		Path:     models.CookiePath,
+		Expires:  time.Now().Add(sessionExpiration),
+		HttpOnly: true,
 	})
 
 	a.r.RenderJSON(ctx, w, rest.Message{Message: "New password is required"})
